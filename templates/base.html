@@ -9,106 +9,113 @@
     <title>ExpertHub - {% block title %}{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.32/sweetalert2.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.32/sweetalert2.min.css">
+
+<style>
+    .custom-swal-popup {
+        font-family: 'Arial', sans-serif;
+        border-radius: 15px !important;
+    }
+    
+    .swal2-title {
+        font-size: 1.5rem !important;
+        font-weight: 600 !important;
+    }
+    
+    .swal2-html-container {
+        font-size: 1.1rem !important;
+    }
+    
+    .swal2-confirm {
+        padding: 12px 25px !important;
+        font-size: 1rem !important;
+    }
+</style>
 </head>
 <body class="min-h-screen bg-gray-100">
-    <nav class="bg-white shadow-sm" x-data="{ isOpen: false }">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
+    <header class="absolute inset-x-0 top-0 z-50">
+        <nav class="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
+            <div class="flex lg:flex-1">
+                <a href="{% url 'home' %}" class="-m-1.5 p-1.5">
+                    <span class="sr-only">ExpertHub</span>
+                    <img class="h-8 w-auto" src="{% static 'images/logo.svg' %}" alt="ExpertHub">
+                </a>
+            </div>
+            <div class="flex lg:hidden">
+                <button type="button" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700" x-on:click="isOpen = !isOpen">
+                    <span class="sr-only">Ouvrir le menu principal</span>
+                    <svg class="h-6 w-6" x-show="!isOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <svg class="h-6 w-6" x-show="isOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="hidden lg:flex lg:gap-x-12">
+                <a href="{% url 'home' %}" class="text-sm font-semibold leading-6 text-gray-900 {% if request.resolver_match.url_name == 'home' %}text-indigo-600{% endif %}">Accueil</a>
+                <a href="#" class="text-sm font-semibold leading-6 text-gray-900 {% if request.resolver_match.url_name == 'professionals' %}text-indigo-600{% endif %}">Professionnels</a>
+                <a href="#" class="text-sm font-semibold leading-6 text-gray-900 {% if request.resolver_match.url_name == 'services' %}text-indigo-600{% endif %}">Services</a>
+                <a href="#" class="text-sm font-semibold leading-6 text-gray-900 {% if request.resolver_match.url_name == 'about' %}text-indigo-600{% endif %}">À propos</a>
+            </div>
+            <div class="hidden lg:flex lg:flex-1 lg:justify-end">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'profiles:profile' %}" class="text-sm font-semibold leading-6 text-indigo-600 hover:text-indigo-500 mr-4">Profile</a>
+                    <a href="{% url 'account_logout' %}" class="text-sm font-semibold leading-6 text-gray-900">Déconnexion</a>
+                {% else %}
+                    <a href="{% provider_login_url 'google' %}" class="flex items-center text-sm font-semibold leading-6 text-gray-900">
+                        <img src="{% static 'images/icons8-google.svg' %}" alt="Google" class="w-5 h-5 mr-2">
+                        Se connecter avec Google
+                    </a>
+                {% endif %}
+            </div>
+        </nav>
+    
+        <!-- Mobile menu -->
+        <div class="lg:hidden" x-show="isOpen" role="dialog" aria-modal="true" style="display: none;">
+            <div class="fixed inset-0 z-50"></div>
+            <div class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+                <div class="flex items-center justify-between">
+                    <a href="{% url 'home' %}" class="-m-1.5 p-1.5">
+                        <span class="sr-only">ExpertHub</span>
                         <img class="h-8 w-auto" src="{% static 'images/logo.svg' %}" alt="ExpertHub">
-                    </div>
-
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="" 
-                           class="{% if request.resolver_match.url_name == 'index' %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Accueil
-                        </a>
-                        <a href="" 
-                           class="{% if request.resolver_match.url_name == 'professionals' %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Professionnels
-                        </a>
-                        <a href="" 
-                           class="{% if request.resolver_match.url_name == 'services' %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Services
-                        </a>
-                        <a href="" 
-                           class="{% if request.resolver_match.url_name == 'about' %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            À propos
-                        </a>
-                    </div>
-                </div>
-
-                <div class="hidden sm:ml-6 sm:flex sm:items-center">
-                    {% if user.is_authenticated %}
-                        <a href="" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-                            Profile
-                        </a>
-                        <a href="{% url 'account_logout' %}" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50">
-                            Déconnexion
-                        </a>
-                    {% else %}
-                        <a href="{% provider_login_url 'google' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-600 bg-white hover:bg-gray-50 shadow-sm">
-                            <img src="{% static 'images/icons8-google.svg' %}" class="w-5 h-5 mr-2" alt="Google">
-                            Se connecter avec Google
-                        </a>
-                    {% endif %}
-                </div>
-
-                <div class="-mr-2 flex items-center sm:hidden">
-                    <button @click="isOpen = !isOpen" type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                        <span class="sr-only">Ouvrir le menu principal</span>
-                        <svg class="h-6 w-6" x-show="!isOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                        <svg class="h-6 w-6" x-show="isOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </a>
+                    <button type="button" class="-m-2.5 rounded-md p-2.5 text-gray-700" x-on:click="isOpen = false">
+                        <span class="sr-only">Fermer le menu</span>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
-            </div>
-        </div>
-
-        <!-- Menu mobile -->
-        <div class="sm:hidden" x-show="isOpen" style="display: none;">
-            <div class="pt-2 pb-3 space-y-1">
-                <a href="" class="{% if request.resolver_match.url_name == 'index' %}bg-indigo-50 border-indigo-500 text-indigo-700{% else %}border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
-                    Accueil
-                </a>
-                <a href="" class="{% if request.resolver_match.url_name == 'professionals' %}bg-indigo-50 border-indigo-500 text-indigo-700{% else %}border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
-                    Professionnels
-                </a>
-                <a href="" class="{% if request.resolver_match.url_name == 'services' %}bg-indigo-50 border-indigo-500 text-indigo-700{% else %}border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
-                    Services
-                </a>
-                <a href="" class="{% if request.resolver_match.url_name == 'about' %}bg-indigo-50 border-indigo-500 text-indigo-700{% else %}border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
-                    À propos
-                </a>
-            </div>
-
-            <div class="pt-4 pb-3 border-t border-gray-200">
-                <div class="space-y-1">
-                    {% if user.is_authenticated %}
-                        <a href="" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
-                            Profile
-                        </a>
-                        <a href="{% url 'account_logout' %}" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
-                            Déconnexion
-                        </a>
-                    {% else %}
-                        <a href="{% provider_login_url 'google' %}" class="flex items-center px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
-                            <img src="{% static 'images/icons8-google.svg' %}" class="w-5 h-5 mr-2" alt="Google">
-                            Se connecter avec Google
-                        </a>
-                    {% endif %}
+                <div class="mt-6 flow-root">
+                    <div class="-my-6 divide-y divide-gray-500/10">
+                        <div class="space-y-2 py-6">
+                            <a href="{% url 'home' %}" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 {% if request.resolver_match.url_name == 'home' %}bg-gray-50{% endif %}">Accueil</a>
+                            <a href="#" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 {% if request.resolver_match.url_name == 'professionals' %}bg-gray-50{% endif %}">Professionnels</a>
+                            <a href="#" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 {% if request.resolver_match.url_name == 'services' %}bg-gray-50{% endif %}">Services</a>
+                            <a href="#" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 {% if request.resolver_match.url_name == 'about' %}bg-gray-50{% endif %}">À propos</a>
+                        </div>
+                        <div class="py-6">
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'profiles:profile' %}" class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-indigo-600 hover:bg-gray-50">Profile</a>
+                                <a href="{% url 'account_logout' %}" class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">Déconnexion</a>
+                            {% else %}
+                                <a href="{% provider_login_url 'google' %}" class="-mx-3 flex items-center rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">
+                                    <img src="{% static 'images/icons8-google.svg' %}" alt="Google" class="w-5 h-5 mr-2">
+                                    Se connecter avec Google
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 mt-16" role="main">
         {% block content %}{% endblock %}
-    </main>
+    </div>
 
     <footer class="bg-gray-800">
         <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
@@ -192,28 +199,72 @@
         updateScrollButtonIcon();
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+    <script>
+        // Configuration globale de SweetAlert2
+        const SwalConfig = Swal.mixin({
+            customClass: {
+                popup: 'custom-swal-popup'
+            },
+            buttonsStyling: true,
+            confirmButtonColor: '#3085d6',
+            timer: 5000,
+            timerProgressBar: true,
+            showCloseButton: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+    
+        // Fonction pour afficher les notifications
+        function showNotification(message, type = 'info') {
+            const config = {
+                text: message,
+                showConfirmButton: false,
+                position: 'top-end',
+                toast: true
+            };
+    
+            switch(type) {
+                case 'success':
+                    config.title = 'Succès!';
+                    config.icon = 'success';
+                    config.iconColor = '#28a745';
+                    break;
+                case 'error':
+                    config.title = 'Erreur!';
+                    config.icon = 'error';
+                    config.iconColor = '#dc3545';
+                    config.timer = 8000; // Plus de temps pour les erreurs
+                    break;
+                case 'warning':
+                    config.title = 'Attention!';
+                    config.icon = 'warning';
+                    config.iconColor = '#ffc107';
+                    break;
+                case 'info':
+                    config.title = 'Information';
+                    config.icon = 'info';
+                    config.iconColor = '#17a2b8';
+                    break;
+            }
+    
+            SwalConfig.fire(config);
+        }
+    </script>
     
     {% if messages %}
-    <script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
         {% for message in messages %}
-            {% if message.tags == 'success' %}
-                Swal.fire({
-                    title: 'Succès!',
-                    text: "{{ message }}",
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
-            {% elif message.tags == 'error' %}
-                Swal.fire({
-                    title: 'Erreur!',
-                    text: "{{ message }}",
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
+            {% if message.tags %}
+                showNotification("{{ message|escapejs }}", "{{ message.tags }}");
+            {% else %}
+                showNotification("{{ message|escapejs }}");
             {% endif %}
         {% endfor %}
-    </script>
-    {% endif %}
+    });
+</script>
+{% endif %}
 </body>
 </html>
