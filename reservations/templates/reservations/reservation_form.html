@@ -1,0 +1,246 @@
+{% extends 'base.html' %} 
+{% block content %}
+
+<div class="container mx-auto px-4 py-8">
+  
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="p-4 {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} rounded-lg">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="max-w-4xl mx-auto">
+        <h2 class="text-2xl font-bold mb-6">Réserver {{ professionnel.full_name }}</h2>
+
+        <form method="POST" action="" id="reservationForm">
+            {% csrf_token %}
+            {{ form.selected_dates }}
+
+            <!-- Affichage des erreurs générales du formulaire -->
+    {% if form.non_field_errors %}
+    <div class="mb-4">
+        {% for error in form.non_field_errors %}
+        <div class="p-4 bg-red-100 text-red-700 rounded-lg">{{ error }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Affichage des erreurs spécifiques aux dates -->
+    {% if form.selected_dates.errors %}
+    <div class="mb-4">
+        {% for error in form.selected_dates.errors %}
+        <div class="p-4 bg-red-100 text-red-700 rounded-lg">{{ error }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+            <div class="space-y-2">
+                <label>Description de votre projet</label>
+                {{ form.description }}
+                <div class="text-red-500 text-sm" id="descriptionError"></div>
+            </div>
+
+            <div class="space-y-2">
+                <label>Numéro de téléphone</label>
+                {{ form.phone }}
+                <div class="text-red-500 text-sm" id="phoneError"></div>
+            </div>
+
+            <div id="calendar-container" class="bg-white p-6 rounded-lg shadow-md mt-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 id="month-display" class="text-xl font-semibold">{{ month_name }} {{ year }}</h2>
+                    <div class="flex space-x-2">
+                        <a href="?year={% if month == 1 %}{{ year|add:'-1' }}{% else %}{{ year }}{% endif %}&month={% if month == 1 %}12{% else %}{{ month|add:'-1' }}{% endif %}"
+                            class="cursor-pointer">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </a>
+                        <a href="?year={% if month == 12 %}{{ year|add:'1' }}{% else %}{{ year }}{% endif %}&month={% if month == 12 %}1{% else %}{{ month|add:'1' }}{% endif %}"
+                            class="cursor-pointer">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-7 gap-1 mb-2">
+                    {% for day in "LMMJVSD" %}
+                    <div class="text-center text-gray-600 text-sm">
+                        {{ day }}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div id="calendar-days" class="grid grid-cols-7 gap-1">
+                    {% for empty in previous_month_days %}
+                    <div class="text-center p-2 text-gray-400">
+                        {{ empty }}
+                    </div>
+                    {% endfor %}
+                    {% for day in days %}
+                    <div class="text-center p-2 relative cursor-pointer hover:bg-gray-50 day-cell {% if day == current_day %}bg-blue-100{% endif %} {% if day in available_days %}available{% endif %}"
+                        data-date="{{ year }}-{{ month|stringformat:'02d' }}-{{ day|stringformat:'02d' }}">
+                        {{ day }}
+                        {% if day in available_days %}
+                        <span class="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-green-500 rounded-full"></span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-4 flex items-center justify-start space-x-4 text-sm">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                        <span class="text-gray-600">Disponible</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-blue-100 rounded-full mr-2"></div>
+                        <span class="text-gray-600">Aujourd'hui</span>
+                    </div>
+                </div>
+                <div class="text-red-500 text-sm mt-2" id="datesError"></div>
+            </div>
+
+            <div class="mt-4">
+                <h3 class="text-lg font-medium text-gray-700">Dates sélectionnées :</h3>
+                <div id="selectedDates" class="mt-2 flex flex-wrap gap-2"></div>
+            </div>
+
+            <button type="submit" class="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Confirmer la réservation
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let selectedDatesArray = [];
+    const selectedDatesInput = document.querySelector('input[name="selected_dates"]');
+    const selectedDatesDisplay = document.getElementById('selectedDates');
+    const form = document.getElementById('reservationForm');
+    const datesError = document.getElementById('datesError');
+    const descriptionError = document.getElementById('descriptionError');
+    const phoneError = document.getElementById('phoneError');
+
+    // Fonction pour formater la date en français
+    function formatDateFr(dateStr) {
+        const months = [
+            'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+            'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+        ];
+        const [year, month, day] = dateStr.split('-');
+        return `${parseInt(day)} ${months[parseInt(month)-1]} ${year}`;
+    }
+
+    // Fonction pour mettre à jour l'affichage des dates sélectionnées
+    function updateSelectedDatesDisplay() {
+        selectedDatesDisplay.innerHTML = '';
+        selectedDatesArray.sort().forEach(date => {
+            const dateDiv = document.createElement('div');
+            dateDiv.className = 'bg-blue-100 px-3 py-1 rounded-full flex items-center';
+            
+            const dateText = document.createElement('span');
+            dateText.textContent = formatDateFr(date);
+            dateText.className = 'mr-2';
+            
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.innerHTML = '&times;';
+            removeButton.className = 'text-blue-500 hover:text-blue-700 font-bold';
+            removeButton.onclick = () => removeDate(date);
+            
+            dateDiv.appendChild(dateText);
+            dateDiv.appendChild(removeButton);
+            selectedDatesDisplay.appendChild(dateDiv);
+        });
+        
+        // Mettre à jour le champ caché
+        selectedDatesInput.value = JSON.stringify(selectedDatesArray);
+    }
+
+    // Fonction pour ajouter une date
+    function addDate(dateStr) {
+        if (!selectedDatesArray.includes(dateStr)) {
+            selectedDatesArray.push(dateStr);
+            updateSelectedDatesDisplay();
+            
+            // Mettre à jour la cellule du calendrier
+            const cell = document.querySelector(`[data-date="${dateStr}"]`);
+            if (cell) {
+                cell.classList.add('bg-blue-500', 'text-white');
+            }
+        }
+    }
+
+    // Fonction pour supprimer une date
+    function removeDate(dateStr) {
+        const index = selectedDatesArray.indexOf(dateStr);
+        if (index > -1) {
+            selectedDatesArray.splice(index, 1);
+            updateSelectedDatesDisplay();
+            
+            // Mettre à jour la cellule du calendrier
+            const cell = document.querySelector(`[data-date="${dateStr}"]`);
+            if (cell) {
+                cell.classList.remove('bg-blue-500', 'text-white');
+            }
+        }
+    }
+
+    // Gestionnaire de clic sur les cellules du calendrier
+    document.querySelectorAll('.day-cell.available').forEach(cell => {
+        cell.addEventListener('click', function() {
+            const dateStr = this.dataset.date;
+            if (this.classList.contains('bg-blue-500')) {
+                removeDate(dateStr);
+            } else {
+                addDate(dateStr);
+            }
+        });
+    });
+
+    // Validation du formulaire
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Réinitialiser les messages d'erreur
+        datesError.textContent = '';
+        descriptionError.textContent = '';
+        phoneError.textContent = '';
+
+        // Vérifier les dates sélectionnées
+        if (selectedDatesArray.length === 0) {
+            datesError.textContent = 'Veuillez sélectionner au moins une date';
+            isValid = false;
+        }
+
+        // Vérifier la description
+        const description = form.querySelector('textarea[name="description"]').value;
+        if (!description.trim()) {
+            descriptionError.textContent = 'Veuillez entrer une description';
+            isValid = false;
+        }
+
+        // Vérifier le numéro de téléphone
+        const phone = form.querySelector('input[name="phone"]').value;
+        if (!phone.trim()) {
+            phoneError.textContent = 'Veuillez entrer un numéro de téléphone';
+            isValid = false;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+
+{% endblock %}
