@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% load socialaccount %}
+
+{% block content %}
+<h2>Connexion avec Google</h2>
+<p>Vous êtes sur le point de vous connecter avec votre compte Google.</p>
+
+<a href="{% provider_login_url 'google' %}">Se connecter avec Google</a>
+
+<hr>
+
+<h3>Ou, connectez-vous avec vos identifiants :</h3>
+<form method="post" action="{% url 'account_login' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Se connecter</button>
+</form>
+
+<p>Pas encore de compte ? <a href="{% url 'account_signup' %}">Inscrivez-vous ici</a></p>
+{% endblock %}
