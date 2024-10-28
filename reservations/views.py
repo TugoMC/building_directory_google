@@ -1,12 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Reservation, Professionnel
+from .models import Reservation, Professionnel, ReservationStatus
 from .forms import ReservationForm
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import calendar
 import json
 import logging
+from .filters import ReservationFilterForm
+from .services import ReservationService
+from .constants import MSG_NO_RESERVATIONS, MSG_FILTER_NO_RESULTS
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +39,7 @@ def reservation_create(request, professionnel_id):
                 reservation = form.save(commit=False)
                 reservation.client = request.user
                 reservation.professionnel = professionnel
+                reservation.status = ReservationStatus.PENDING
                 
                 # Validate selected dates format
                 selected_dates = json.loads(form.cleaned_data['selected_dates'])
@@ -45,7 +49,7 @@ def reservation_create(request, professionnel_id):
                 reservation.save()
                 logger.info(f"Reservation created successfully with ID: {reservation.id}")
                 
-                messages.success(request, "Votre réservation a été créée avec succès!")
+                messages.success(request, "Votre réservation a été créée avec succès ! Elle est en attente de confirmation.")
                 return redirect('reservation_success')
                 
             except json.JSONDecodeError as e:
@@ -60,7 +64,7 @@ def reservation_create(request, professionnel_id):
     else:
         form = ReservationForm(professionnel=professionnel)
     
-    # Préparation du calendrier (votre code existant)
+    # Préparation du calendrier
     cal = calendar.monthcalendar(year, month)
     month_name = calendar.month_name[month]
     available_days = set()
@@ -78,11 +82,15 @@ def reservation_create(request, professionnel_id):
     
     available_weekdays_en = [fr_to_en[day] for day in available_weekdays]
     
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
+    
     for week in cal:
         for day in week:
             if day != 0:
                 current_date = date(year, month, day)
-                if current_date >= date.today() and current_date.strftime('%A') in available_weekdays_en:
+                # Vérifier que la date est à partir de demain et est un jour ouvrable
+                if current_date >= tomorrow and current_date.strftime('%A') in available_weekdays_en:
                     available_days.add(day)
     
     previous_month_days = []
@@ -109,6 +117,74 @@ def reservation_create(request, professionnel_id):
     
     return render(request, 'reservations/reservation_form.html', context)
 
-
+@login_required
 def reservation_success(request):
     return render(request, "reservations/success.html")
+
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .filters import ReservationFilterForm
+from .services import ReservationService
+from .constants import MSG_NO_RESERVATIONS, MSG_FILTER_NO_RESULTS
+import logging
+
+logger = logging.getLogger(__name__)
+
+@login_required
+def reservation_list(request):
+    logger.debug("Starting reservation_list view")
+    logger.debug(f"GET parameters: {request.GET}")
+    
+    # Initialiser le formulaire de filtrage avec les données de la requête
+    filter_form = ReservationFilterForm(request.GET or None)
+    logger.debug(f"Filter form is bound: {filter_form.is_bound}")
+    
+    
+    # Récupérer les réservations filtrées
+    reservations = ReservationService.get_filtered_reservations(
+        user=request.user,
+        filter_form=filter_form
+    )
+    logger.debug(f"Number of reservations before pagination: {reservations.count()}")
+    
+    # Paginer les résultats
+    page_obj = ReservationService.paginate_reservations(
+        reservations=reservations,
+        page_number=request.GET.get('page')
+    )
+    
+    # Préparer le message si aucun résultat
+    if not reservations.exists():
+        if filter_form.is_bound and any(filter_form.cleaned_data.values() if filter_form.is_valid() else []):
+            messages.info(request, MSG_FILTER_NO_RESULTS)
+            logger.debug("No results found with active filters")
+        else:
+            messages.info(request, MSG_NO_RESERVATIONS)
+            logger.debug("No reservations found")
+    
+    context = {
+        'filter_form': filter_form,
+        'page_obj': page_obj,
+        'has_filters': filter_form.is_bound and any(filter_form.cleaned_data.values() if filter_form.is_valid() else [])
+    }
+    
+    logger.debug("Rendering reservation list template")
+    return render(request, 'reservations/reservation_list.html', context)
+
+
+
+@login_required
+def reservation_delete(request, reservation_id):
+    reservation = get_object_or_404(Reservation, id=reservation_id, client=request.user)
+    
+    if request.method == "POST":
+        reservation.cancel()  # Utilisation de la méthode cancel() existante
+        messages.success(request, "Votre réservation a été annulée avec succès.")
+        return redirect('reservation_list')
+        
+    return render(request, 'reservations/reservation_delete.html', {
+        'reservation': reservation
+    })

@@ -1,151 +1,228 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Liste des professionels{% endblock %}
+
+{% block title %}Liste des professionnels{% endblock %}
+
 {% block content %}
 <div class="flex h-screen bg-gray-50">
-    <!-- Sidebar Filters -->
+    <!-- Sidebar des filtres -->
     <div class="hidden md:flex md:w-64 md:flex-col">
         <div class="flex flex-col flex-grow pt-5 bg-white overflow-y-auto border-r border-gray-200">
             <div class="flex items-center flex-shrink-0 px-4">
                 <h2 class="text-lg font-semibold text-gray-900">Filtres</h2>
             </div>
-            <div class="mt-5 flex-grow flex flex-col">
-                <nav class="flex-1 px-4 space-y-6">
-                    <!-- Search -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Rechercher</label>
-                        <div class="mt-1 relative rounded-md shadow-sm">
-                            <input type="text" name="search" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-4 pr-4 sm:text-sm border-gray-300 rounded-md" placeholder="Nom ou spécialité...">
-                        </div>
-                    </div>
 
-                    <!-- City Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Ville</label>
-                        <select class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                            <option value="">Toutes les villes</option>
-                            {% for city_code, city_name in cities %}
-                                <option value="{{ city_code }}">{{ city_name }}</option>
-                            {% endfor %}
-                        </select>
+            <form id="filter-form" method="get" class="mt-5 flex-grow flex flex-col px-4">
+                <!-- Barre de recherche -->
+                <div class="mb-4">
+                    <label for="search" class="block text-sm font-medium text-gray-700">Rechercher</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <input type="text" name="search" id="search" 
+                               value="{{ request.GET.search }}"
+                               placeholder="Nom"
+                               class="block w-full pr-10 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     </div>
+                </div>
 
-                    <!-- Specialization Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Spécialisation</label>
-                        <select class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                            <option value="">Toutes les spécialisations</option>
-                            {% for spec_code, spec_name in specializations %}
-                                <option value="{{ spec_code }}">{{ spec_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                <!-- Sélection de la ville -->
+                <div class="mb-4">
+                    <label for="city" class="block text-sm font-medium text-gray-700">Ville</label>
+                    <select name="city" id="city" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md">
+                        <option value="">Toutes les villes</option>
+                        {% for city_code, city_name in cities %}
+                            <option value="{{ city_code }}" {% if request.GET.city == city_code %}selected{% endif %}>
+                                {{ city_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-                    <!-- Skill Level Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Niveau</label>
-                        <select class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                            <option value="">Tous les niveaux</option>
-                            {% for level_code, level_name in skill_levels %}
-                                <option value="{{ level_code }}">{{ level_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                <!-- Sélection de la spécialisation -->
+                <div class="mb-4">
+                    <label for="specialization" class="block text-sm font-medium text-gray-700">Spécialisation</label>
+                    <select name="specialization" id="specialization" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md">
+                        <option value="">Toutes les spécialisations</option>
+                        {% for spec_code, spec_name in specializations %}
+                            <option value="{{ spec_code }}" {% if request.GET.specialization == spec_code %}selected{% endif %}>
+                                {{ spec_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-                    <!-- Apply Filters Button -->
-                    <div>
-                        <button type="button" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Appliquer les filtres
-                        </button>
-                    </div>
-                </nav>
-            </div>
+                <!-- Sélection du niveau -->
+                <div class="mb-4">
+                    <label for="skill_level" class="block text-sm font-medium text-gray-700">Niveau</label>
+                    <select name="skill_level" id="skill_level" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md">
+                        <option value="">Tous les niveaux</option>
+                        {% for level_code, level_name in skill_levels %}
+                            <option value="{{ level_code }}" {% if request.GET.skill_level == level_code %}selected{% endif %}>
+                                {{ level_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Bouton d'application des filtres -->
+                <div class="mt-4">
+                    <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Appliquer les filtres
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="md:pl-10 flex flex-col flex-1">
+    <!-- Contenu principal -->
+    <div class="md:pl-0 flex flex-col flex-1">
         <main class="flex-1">
             <div class="py-6">
+                <!-- En-tête -->
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                    <div class="flex">
+                    <div class="flex items-center justify-between">
                         <h1 class="text-2xl font-semibold text-gray-900">Liste des Professionnels</h1>
-                        <span class="inline-flex rounded-md shadow-sm">
-                            <button type="button" class="md:hidden inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                Filtres
-                            </button>
-                        </span>
+                        <!-- Bouton pour afficher les filtres sur mobile -->
+                        <button type="button" class="md:hidden inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                            </svg>
+                            Filtres
+                        </button>
                     </div>
                 </div>
 
+                <!-- Liste des professionnels -->
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                    <!-- Professionnel Cards Grid -->
                     <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {% for professionnel in professionnels %}
-                        <div class="bg-white overflow-hidden shadow rounded-lg divide-y divide-gray-200 hover:shadow-lg transition-shadow duration-200">
-                            <div class="px-4 py-5 sm:px-6">
-                                <div class="flex items-center">
-                                    {% if professionnel.profile_photo %}
-                                        <img src="{{ professionnel.profile_photo.url }}" alt="{{ professionnel.full_name }}" class="w-16 h-16 rounded-full">
-                                    {% else %}
-                                        <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
-                                            <span class="text-2xl font-medium text-indigo-700">{{ professionnel.full_name|first }}</span>
+                            <div class="bg-white overflow-hidden shadow rounded-lg divide-y divide-gray-200 hover:shadow-lg transition-shadow duration-200">
+                                <!-- En-tête de la carte -->
+                                <div class="px-4 py-5 sm:px-6">
+                                    <div class="flex items-center">
+                                        {% if professionnel.profile_photo %}
+                                            <img src="{{ professionnel.profile_photo.url }}" 
+                                                 alt="{{ professionnel.full_name }}"
+                                                 class="w-16 h-16 rounded-full object-cover">
+                                        {% else %}
+                                            <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
+                                                <span class="text-2xl font-medium text-indigo-700">
+                                                    {{ professionnel.full_name|first }}
+                                                </span>
+                                            </div>
+                                        {% endif %}
+                                        <div class="ml-4">
+                                            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                                {{ professionnel.full_name }}
+                                            </h3>
+                                            <p class="text-sm text-gray-500">
+                                                {{ professionnel.specialization }}
+                                            </p>
                                         </div>
-                                    {% endif %}
-                                    <div class="ml-4">
-                                        <h3 class="text-lg leading-6 font-medium text-gray-900">{{ professionnel.full_name }}</h3>
-                                        <p class="text-sm text-gray-500">{{ professionnel.specialization }}</p>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="px-4 py-4 sm:px-6 space-y-2">
-                                <div class="flex items-center text-sm text-gray-500">
-                                    <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" />
-                                    </svg>
-                                    {{ professionnel.city }}
+
+                                <!-- Informations -->
+                                <div class="px-4 py-4 sm:px-6 space-y-2">
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        <!-- Icône localisation -->
+                                        <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                        </svg>
+                                        {{ professionnel.city }}
+                                    </div>
+
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        <!-- Icône niveau -->
+                                        <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1zM2 9v3.53c1.76.77 3.78 1.22 6 1.42 2.22-.2 4.24-.65 6-1.42V9h-2v1a1 1 0 11-2 0V9H8v1a1 1 0 11-2 0V9H2z" clip-rule="evenodd" />
+                                        </svg>
+                                        Niveau : {{ professionnel.skill_level }}
+                                    </div>
                                 </div>
-                                <div class="flex items-center text-sm text-gray-500">
-                                    <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd" />
-                                    </svg>
-                                    {{ professionnel.skill_level }}
-                                </div>
-                                <div class="flex items-center text-sm text-gray-500">
-                                    <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                                    </svg>
-                                    {{ professionnel.daily_rate }} FCFA/jour
+
+                                <!-- Bouton de détails -->
+                                <div class="px-4 py-4 sm:px-6">
+                                    <a href="{% url 'professionnel_detail' professionnel.id %}" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                                        Voir le profil
+                                    </a>
                                 </div>
                             </div>
-                            <div class="px-4 py-4 sm:px-6">
-                                <div class="flex justify-between">
-                                    <a href="{% url 'professionnel_detail' professionnel.pk %}" class="text-indigo-600 hover:text-indigo-500">Voir le profil</a>
-                                </div>
-                            </div>
-                        </div>
-                        {% empty %}
-                        <div class="col-span-full">
-                            <div class="text-center py-12 bg-white rounded-lg">
-                                <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 4a6 6 0 100 12 6 6 0 000-12zM4 10a6 6 0 0112 0A5.977 5.977 0 0010 16a5.977 5.977 0 00-6-6z" clip-rule="evenodd" />
-                                </svg>
-                                <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun professionnel trouvé.</h3>
-                                <p class="mt-1 text-sm text-gray-500">Essayez d'ajuster vos filtres ou élargissez votre recherche.</p>
-                            </div>
-                        </div>
                         {% endfor %}
+
+
+
                     </div>
+
+
                 </div>
+                <!-- Nouvelle section pour la pagination -->
+      
+  
             </div>
         </main>
     </div>
 </div>
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+    <div class="flex flex-1 justify-between sm:hidden">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Précédent</a>
+    {% endif %}
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Suivant</a>
+    {% endif %}
+    </div>
+
+    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+    <div class="text-sm text-gray-700">
+        Affichage de <span class="font-medium">{{ page_obj.start_index }}</span> à
+        <span class="font-medium">{{ page_obj.end_index }}</span> sur
+        <span class="font-medium">{{ page_obj.paginator.count }}</span> résultats
+    </div>
+
+    <nav class="flex space-x-2 items-center">
+        {% if page_obj.has_previous %}
+        <a href="?page=1" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <span class="sr-only">Première page</span> «
+        </a>
+        <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <span class="sr-only">Page précédente</span> ‹
+        </a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if num == page_obj.number %}
+            <span class="relative inline-flex items-center bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 ring-1 ring-inset ring-indigo-600 rounded-md">
+            {{ num }}
+            </span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50">
+            {{ num }}
+            </a>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <span class="sr-only">Page suivante</span> ›
+        </a>
+        <a href="?page={{ page_obj.paginator.num_pages }}" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <span class="sr-only">Dernière page</span> »
+        </a>
+        {% endif %}
+    </nav>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
-
-
-
-
-
-
+{% block extra_js %}
+<script>
+    document.getElementById('search').addEventListener('input', function() {
+        clearTimeout(this.searchTimeout);
+        this.searchTimeout = setTimeout(() => {
+            document.getElementById('filter-form').submit();
+        }, 500); // délai de 500 ms pour éviter de déclencher le filtre trop souvent
+    });
+</script>
+{% endblock %}

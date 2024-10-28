@@ -1,7 +1,7 @@
 # reservation/forms.py
 from django import forms
-from .models import Reservation
-from datetime import datetime, timedelta
+from .models import Reservation, ReservationStatus
+from datetime import date, datetime, timedelta
 import json
 
 class ReservationForm(forms.ModelForm):
@@ -30,73 +30,37 @@ class ReservationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
     def clean_selected_dates(self):
-        dates = self.cleaned_data.get('selected_dates')
-        if not dates:
-            raise forms.ValidationError("Veuillez sélectionner au moins une date.")
-        
-        try:
-            dates_list = json.loads(dates)
-            if not dates_list:
-                raise forms.ValidationError("Veuillez sélectionner au moins une date.")
-
-            # Dictionnaire de conversion français -> anglais pour les jours
-            fr_to_en = {
-                'Lundi': 'Monday',
-                'Mardi': 'Tuesday',
-                'Mercredi': 'Wednesday',
-                'Jeudi': 'Thursday',
-                'Vendredi': 'Friday',
-                'Samedi': 'Saturday',
-                'Dimanche': 'Sunday'
-            }
-            
-            # Obtenir les jours disponibles en anglais
-            available_days = [fr_to_en[day] for day in self.professionnel.get_workdays_list()]
-            
-            for date_str in dates_list:
-                try:
-                    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-                    weekday = date_obj.strftime('%A')  # Obtient le jour en anglais
-                    
-                    if weekday not in available_days:
-                        # Conversion inverse pour l'affichage
-                        en_to_fr = {v: k for k, v in fr_to_en.items()}
-                        jour_fr = en_to_fr[weekday]
+        selected_dates = self.cleaned_data.get('selected_dates')
+        if selected_dates:
+            try:
+                dates = json.loads(selected_dates)
+                today = date.today()
+                
+                # Vérifier chaque date sélectionnée
+                for date_str in dates:
+                    reservation_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                    if reservation_date <= today:
                         raise forms.ValidationError(
-                            f"Le jour {jour_fr} n'est pas disponible pour ce professionnel."
+                            "Vous ne pouvez pas sélectionner la date d'aujourd'hui ou une date passée."
                         )
-                except ValueError:
-                    raise forms.ValidationError(f"Le format de la date {date_str} est invalide.")
-                    
-        except json.JSONDecodeError:
-            raise forms.ValidationError("Format de dates invalide.")
-            
-        return dates
-    
-    
-    
-
+                
+                return selected_dates
+            except json.JSONDecodeError:
+                raise forms.ValidationError("Format de dates invalide")
+        return selected_dates
 
 class ReservationAdminForm(forms.ModelForm):
     class Meta:
         model = Reservation
-        fields = ['professionnel', 'client', 'description', 'phone', 'selected_dates']
+        fields = ['professionnel', 'client', 'description', 'phone', 'selected_dates', 'status']
 
-    def clean_selected_dates(self):
-        dates = self.cleaned_data.get('selected_dates')
-        
-        # Si les dates sont déjà sous forme de liste, convertissez-les en JSON
-        if isinstance(dates, list):
-            return json.dumps(dates)
-
-        if not dates:
-            raise forms.ValidationError("Veuillez sélectionner au moins une date.")
-        
-        try:
-            dates_list = json.loads(dates)
-            if not isinstance(dates_list, list):
-                raise forms.ValidationError("Le format des dates sélectionnées doit être une liste.")
-        except json.JSONDecodeError:
-            raise forms.ValidationError("Format de dates invalide.")
-        
-        return dates
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.instance.pk:
+            old_status = Reservation.objects.get(pk=self.instance.pk).status
+            new_status = cleaned_data.get('status')
+            if not self.instance._is_valid_status_transition(old_status, new_status):
+                self.add_error('status', 
+                    f'Transition invalide de {old_status} vers {new_status}'
+                )
+        return cleaned_data

@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import ProfileForm
 from .models import Profile
+from reservations.models import Reservation  # Ajoutez cette ligne
 
 @login_required
 def profile_view(request):
@@ -17,4 +18,10 @@ def profile_view(request):
     else:
         form = ProfileForm(instance=profile)
     
-    return render(request, 'profiles/profile.html', {'form': form})
+    # Récupérer les réservations de l'utilisateur
+    reservations = Reservation.objects.filter(client=request.user).order_by('-created_at')
+    
+    return render(request, 'profiles/profile.html', {
+        'form': form,
+        'reservations': reservations
+    })

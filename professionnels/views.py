@@ -15,7 +15,7 @@ class ProfessionnelListView(ListView):
     model = Professionnel
     template_name = 'professionnels/professionnels_list.html'
     context_object_name = 'professionnels'
-    paginate_by = 10
+    paginate_by = 6
 
     def get_queryset(self):
         queryset = Professionnel.objects.all()
