@@ -49,10 +49,14 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     
+    'crispy_forms',
+    'crispy_bootstrap5', 
+    
     'profiles',
     'static_pages',
     'professionnels',
     'reservations',
+    'remboursements',
 ]
 
 MIDDLEWARE = [
@@ -187,3 +191,17 @@ LOGOUT_REDIRECT_URL = '/'
 
 # Configuration email (pour le développement)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+CRON_CLASSES = [
+    'reservations.cron.DeleteCancelledReservations',
+]
+
+CRONJOBS = [
+    ('0 0 * * *', 'django.core.management.call_command', ['delete_cancelled_reservations'])
+]
+
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"  # ou "bootstrap4" selon la version
+CRISPY_TEMPLATE_PACK = "bootstrap5"  # ou "bootstrap4"
+

@@ -1,0 +1,90 @@
+
+<!-- templates/remboursements/refund_request_detail.html -->
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container my-4">
+    <h2>Détails de la demande de remboursement</h2>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Informations générales</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Date de la demande :</strong> {{ refund_request.created_at|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Montant :</strong> {{ refund_request.refund_amount }} FCFA</p>
+                    <p><strong>Numéro Wave :</strong> {{ refund_request.wave_number }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Statut :</strong>
+                        {% if refund_request.processed_at %}
+                            {% if refund_request.rejection_reason %}
+                                <span class="badge bg-danger">Refusée</span>
+                            {% else %}
+                                <span class="badge bg-success">Acceptée</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-warning">En attente</span>
+                        {% endif %}
+                    </p>
+                    {% if refund_request.processed_at %}
+                    <p><strong>Traité le :</strong> {{ refund_request.processed_at|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Traité par :</strong> {{ refund_request.processed_by.get_full_name }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Motif de la demande</h5>
+        </div>
+        <div class="card-body">
+            <p>{{ refund_request.reason|linebreaks }}</p>
+        </div>
+    </div>
+
+    {% if refund_request.rejection_reason %}
+    <div class="card mb-4 border-danger">
+        <div class="card-header bg-danger text-white">
+            <h5 class="card-title mb-0">Motif du refus</h5>
+        </div>
+        <div class="card-body">
+            <p>{{ refund_request.rejection_reason|linebreaks }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if refund_request.admin_notes %}
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="card-title mb-0">Notes administratives</h5>
+        </div>
+        <div class="card-body">
+            <p>{{ refund_request.admin_notes|linebreaks }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if request.user.is_staff and not refund_request.processed_at %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Traiter la demande</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'remboursements:process_refund' refund_request.pk %}">
+                {% csrf_token %}
+                {{ process_form|crispy }}
+                <button type="submit" class="btn btn-primary">
+                    Valider le traitement
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

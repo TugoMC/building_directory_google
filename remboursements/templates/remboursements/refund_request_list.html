@@ -1,0 +1,55 @@
+
+<!-- templates/remboursements/refund_request_list.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <h2>Demandes de remboursement</h2>
+    
+    {% if refund_requests %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Réservation</th>
+                    <th>Montant</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in refund_requests %}
+                <tr>
+                    <td>{{ request.created_at|date:"d/m/Y" }}</td>
+                    <td>{{ request.reservation.reference }}</td>
+                    <td>{{ request.refund_amount }} FCFA</td>
+                    <td>
+                        {% if request.processed_at %}
+                            {% if request.rejection_reason %}
+                                <span class="badge bg-danger">Refusée</span>
+                            {% else %}
+                                <span class="badge bg-success">Acceptée</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-warning">En attente</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'remboursements:refund_request_detail' request.pk %}" 
+                           class="btn btn-sm btn-outline-primary">
+                            Détails
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        Aucune demande de remboursement n'a été trouvée.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

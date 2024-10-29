@@ -1,0 +1,34 @@
+<!-- templates/remboursements/refund_request_form.html -->
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container my-4">
+    <h2>Demande de remboursement</h2>
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Détails de la réservation</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Référence :</strong> {{ reservation.reference }}</p>
+            <p><strong>Montant total :</strong> {{ reservation.total_price }} FCFA</p>
+            <p><strong>Date de réservation :</strong> {{ reservation.created_at|date:"d/m/Y" }}</p>
+        </div>
+    </div>
+
+    <form method="post" class="card">
+        {% csrf_token %}
+        <div class="card-body">
+            {{ form|crispy }}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                Le remboursement sera effectué via Wave Mobile au numéro indiqué.
+            </div>
+            <button type="submit" class="btn btn-primary">
+                Soumettre la demande
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

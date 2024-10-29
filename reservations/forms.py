@@ -1,7 +1,7 @@
 # reservation/forms.py
 from django import forms
-from .models import Reservation, ReservationStatus
-from datetime import date, datetime, timedelta
+from .models import Reservation
+from datetime import date, datetime
 import json
 
 class ReservationForm(forms.ModelForm):

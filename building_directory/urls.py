@@ -7,7 +7,8 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('', include('profiles.urls')),
     path('', include('professionnels.urls')),
-    path('reservation/', include('reservations.urls'))
+    path('reservation/', include('reservations.urls')),
+    path('remboursement/', include('remboursements.urls')),
     
     
     

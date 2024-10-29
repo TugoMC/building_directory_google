@@ -105,6 +105,15 @@
                                             Annuler la réservation
                                         </a>
                                     {% endif %}
+                                    {% if reservation.status == 'confirmed' %}
+                                        <a href="{% url 'remboursements:refund_request_create' reservation.id %}" class="btn">
+                                            Demander un remboursement
+                                        </a>
+                                    {% elif reservation.remboursements_demande %}
+                                        <p>Une demande de remboursement est déjà en cours</p>
+                                    {% endif %}
+
+                                    
                                 </div>
                             </dd>
                         </div>

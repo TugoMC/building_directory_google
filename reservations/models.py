@@ -5,16 +5,22 @@ from django.conf import settings
 from django.utils import timezone
 from professionnels.models import Professionnel
 from django.core.exceptions import ValidationError
-
 from reservations.managers import ReservationManager
 
 class ReservationStatus(models.TextChoices):
     PENDING = 'pending', 'En attente de confirmation'
     READY_TO_PAY = 'ready_to_pay', 'Prêt à payer'
     CONFIRMED = 'confirmed', 'Confirmé'
+    REFUND_REQUESTED = 'refund_requested', 'Remboursement demandé'
+    REFUND_ACCEPTED = 'refund_accepted', 'Remboursement accepté'
+    REFUND_REJECTED = 'refund_rejected', 'Remboursement refusé'
+    REFUNDED = 'refunded', 'Remboursé'
     COMPLETED = 'completed', 'Terminé'
     CANCELLED = 'cancelled', 'Annulé'
-
+    
+    
+    
+    
 class Reservation(models.Model):
     objects = ReservationManager()
     professionnel = models.ForeignKey(
@@ -52,6 +58,19 @@ class Reservation(models.Model):
         auto_now_add=True,
         verbose_name="Dernière modification du statut"
     )
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    total_price = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        verbose_name="Prix total",
+        help_text="Prix total basé sur le nombre de jours × tarif journalier",
+        editable=False
+    )
+
+    def cancel(self):
+        self.status = ReservationStatus.CANCELLED
+        self.cancelled_at = timezone.now()
+        self.save()
 
     def __str__(self):
         return f"Réservation pour {self.professionnel.full_name} par {self.client.username} ({self.status})"
@@ -95,14 +114,50 @@ class Reservation(models.Model):
                 ReservationStatus.CANCELLED
             },
             ReservationStatus.CONFIRMED: {
+                ReservationStatus.REFUND_REQUESTED,
                 ReservationStatus.COMPLETED,
                 ReservationStatus.CANCELLED
             },
+            ReservationStatus.REFUND_REQUESTED: {
+                ReservationStatus.REFUND_ACCEPTED,
+                ReservationStatus.REFUND_REJECTED
+            },
+            ReservationStatus.REFUND_ACCEPTED: {
+                ReservationStatus.REFUNDED
+            },
+            ReservationStatus.REFUND_REJECTED: {
+                ReservationStatus.CONFIRMED  # Retour à l'état confirmé
+            },
+            ReservationStatus.REFUNDED: set(),  # État final
             ReservationStatus.COMPLETED: set(),  # État final
             ReservationStatus.CANCELLED: set(),  # État final
         }
         return new_status in valid_transitions.get(old_status, set())
 
+    def request_refund(self):
+        """Demande un remboursement pour la réservation."""
+        if self.status == ReservationStatus.CONFIRMED:
+            self.status = ReservationStatus.REFUND_REQUESTED
+            self.save()
+
+    def accept_refund(self):
+        """Accepte la demande de remboursement."""
+        if self.status == ReservationStatus.REFUND_REQUESTED:
+            self.status = ReservationStatus.REFUND_ACCEPTED
+            self.save()
+
+    def reject_refund(self):
+        """Refuse la demande de remboursement."""
+        if self.status == ReservationStatus.REFUND_REQUESTED:
+            self.status = ReservationStatus.REFUND_REJECTED
+            self.save()
+
+    def mark_as_refunded(self):
+        """Marque la réservation comme remboursée."""
+        if self.status == ReservationStatus.REFUND_ACCEPTED:
+            self.status = ReservationStatus.REFUNDED
+            self.save()
+            
     def mark_as_ready_to_pay(self):
         """Marque la réservation comme prête à payer."""
         if self.status == ReservationStatus.PENDING:
@@ -145,3 +200,24 @@ class Reservation(models.Model):
             
             if latest_date < today:
                 reservation.mark_as_completed()
+                
+    
+    def calculate_total_price(self):
+        if isinstance(self.selected_dates, str):
+            dates = json.loads(self.selected_dates)
+        else:
+            dates = self.selected_dates
+        number_of_days = len(dates)
+        return self.professionnel.daily_rate * number_of_days
+
+    def save(self, *args, **kwargs):
+        # Calculer le prix total
+        self.total_price = self.calculate_total_price()
+        
+        # Code existant pour la mise à jour du statut
+        if self.pk:
+            old_instance = Reservation.objects.get(pk=self.pk)
+            if old_instance.status != self.status:
+                self.last_status_change = timezone.now()
+        super().save(*args, **kwargs)
+        
