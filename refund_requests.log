@@ -1,0 +1,345 @@
+2024-10-29 09:01:23,038 - refund_system - INFO - Début de l'opération: get_context_data
+Context: N/A
+User: N/A
+Reservation: N/A
+
+
+2024-10-29 09:01:23,039 - refund_system - DEBUG - Récupération du contexte
+Context: {}
+User: kouakou_junior
+Reservation: 1
+Début get_context_data
+
+2024-10-29 09:01:23,042 - refund_system - DEBUG - Réservation récupérée
+Context: {'form': <RefundRequestForm bound=False, valid=Unknown, fields=(reason;wave_number)>, 'view': <remboursements.views.RefundRequestCreateView object at 0x000002D8968E8F80>}
+User: kouakou_junior
+Reservation: Réservation pour mmm par kouakou_junior (confirmed)
+{'reservation_status': 'confirmed', 'reservation_total': Decimal('12100.00')}
+
+2024-10-29 09:01:23,046 - refund_system - INFO - Opération réussie: get_context_data
+Context: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+User: kouakou_junior
+Reservation: N/A
+
+
+2024-10-29 09:01:33,993 - refund_system - INFO - Début de l'opération: get_context_data
+Context: N/A
+User: N/A
+Reservation: N/A
+
+
+2024-10-29 09:01:33,994 - refund_system - DEBUG - Récupération du contexte
+Context: {}
+User: kouakou_junior
+Reservation: 1
+Début get_context_data
+
+2024-10-29 09:01:33,997 - refund_system - DEBUG - Réservation récupérée
+Context: {'form': <RefundRequestForm bound=False, valid=Unknown, fields=(reason;wave_number)>, 'view': <remboursements.views.RefundRequestCreateView object at 0x000002D897DB9850>}
+User: kouakou_junior
+Reservation: Réservation pour mmm par kouakou_junior (confirmed)
+{'reservation_status': 'confirmed', 'reservation_total': Decimal('12100.00')}
+
+2024-10-29 09:01:33,999 - refund_system - INFO - Opération réussie: get_context_data
+Context: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+User: kouakou_junior
+Reservation: N/A
+
+
+2024-10-29 09:02:09,070 - refund_system - INFO - Début de l'opération: get_context_data
+Context: N/A
+User: N/A
+Reservation: N/A
+
+
+2024-10-29 09:02:09,070 - refund_system - DEBUG - Récupération du contexte
+Context: {'form': <RefundRequestForm bound=True, valid=False, fields=(reason;wave_number)>}
+User: kouakou_junior
+Reservation: 1
+Début get_context_data
+
+2024-10-29 09:02:09,072 - refund_system - DEBUG - Réservation récupérée
+Context: {'form': <RefundRequestForm bound=True, valid=False, fields=(reason;wave_number)>, 'view': <remboursements.views.RefundRequestCreateView object at 0x000002D897D92E40>}
+User: kouakou_junior
+Reservation: Réservation pour mmm par kouakou_junior (confirmed)
+{'reservation_status': 'confirmed', 'reservation_total': Decimal('12100.00')}
+
+2024-10-29 09:02:09,076 - refund_system - INFO - Opération réussie: get_context_data
+Context: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+User: kouakou_junior
+Reservation: N/A
+
+
+[2024-10-29 09:05:05,702] INFO: Début de get_context_data
+Request ID: ff8e1c47
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+
+
+[2024-10-29 09:05:05,728] ERROR: Erreur inattendue
+Request ID: ff8e1c47
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+{'error_type': 'AttributeError', 'error_message': "'Reservation' object has no attribute 'payment_status'", 'traceback': 'Traceback (most recent call last):\n  File "D:\\Developpement_Web\\Django\\Special_2\\building_directory\\remboursements\\views.py", line 116, in wrapper\n    result = func(view_instance, *args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "D:\\Developpement_Web\\Django\\Special_2\\building_directory\\remboursements\\views.py", line 181, in get_context_data\n    \'payment_status\': reservation.payment_status\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: \'Reservation\' object has no attribute \'payment_status\'\n'}
+Traceback (most recent call last):
+  File "D:\Developpement_Web\Django\Special_2\building_directory\remboursements\views.py", line 116, in wrapper
+    result = func(view_instance, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Developpement_Web\Django\Special_2\building_directory\remboursements\views.py", line 181, in get_context_data
+    'payment_status': reservation.payment_status
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Reservation' object has no attribute 'payment_status'
+[2024-10-29 09:06:58,140] INFO: Début de get_context_data
+Request ID: c6fd2b03
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+
+
+[2024-10-29 09:06:58,146] DEBUG: Réservation récupérée
+Request ID: 24ef14c3
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+{'reservation_status': 'confirmed', 'total_price': '12100.00', 'client': 'kouakou_junior'}
+
+[2024-10-29 09:06:58,158] INFO: Succès de get_context_data
+Request ID: c6fd2b03
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+Opération terminée avec succès
+
+[2024-10-29 09:07:16,081] INFO: Début de get_context_data
+Request ID: 5a2f469f
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+
+
+[2024-10-29 09:07:16,084] DEBUG: Détails du formulaire
+Request ID: 5a2f469f
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+{'is_bound': True, 'is_valid': False, 'errors': {'__all__': ['Une réservation doit être spécifiée']}, 'cleaned_data': {}, 'fields': ['reason', 'wave_number']}
+
+[2024-10-29 09:07:16,091] DEBUG: Réservation récupérée
+Request ID: 699eb218
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+{'reservation_status': 'confirmed', 'total_price': '12100.00', 'client': 'kouakou_junior'}
+
+[2024-10-29 09:07:16,094] INFO: Succès de get_context_data
+Request ID: 5a2f469f
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+Opération terminée avec succès
+
+[2024-10-29 09:16:56,867] INFO: Début de get_context_data
+Request ID: 88987b4f
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+
+
+[2024-10-29 09:16:56,874] DEBUG: Réservation récupérée
+Request ID: e2e6e9d8
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+{'reservation_status': 'confirmed', 'total_price': '12100.00', 'client': 'kouakou_junior'}
+
+[2024-10-29 09:16:56,875] INFO: Succès de get_context_data
+Request ID: 88987b4f
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+Opération terminée avec succès
+
+[2024-10-29 09:17:02,505] INFO: Début de get_context_data
+Request ID: d9762418
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+
+
+[2024-10-29 09:17:02,507] DEBUG: Détails du formulaire
+Request ID: d9762418
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+{'is_bound': True, 'is_valid': False, 'errors': {'__all__': ['Une réservation doit être spécifiée']}, 'cleaned_data': {}, 'fields': ['reason', 'wave_number']}
+
+[2024-10-29 09:17:02,512] DEBUG: Réservation récupérée
+Request ID: 5de1ad76
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+{'reservation_status': 'confirmed', 'total_price': '12100.00', 'client': 'kouakou_junior'}
+
+[2024-10-29 09:17:02,513] INFO: Succès de get_context_data
+Request ID: d9762418
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+Opération terminée avec succès
+
+[2024-10-29 09:19:34,412] INFO: Début de get_context_data
+Request ID: 013a8bf8
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+
+
+[2024-10-29 09:19:34,417] DEBUG: Réservation récupérée
+Request ID: 46547845
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+{'reservation_status': 'confirmed', 'total_price': '12100.00', 'client': 'kouakou_junior'}
+
+[2024-10-29 09:19:34,417] INFO: Succès de get_context_data
+Request ID: 013a8bf8
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+Opération terminée avec succès
+
+[2024-10-29 09:19:40,880] INFO: Début de get_context_data
+Request ID: d0dc7237
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+
+
+[2024-10-29 09:19:40,881] DEBUG: Détails du formulaire
+Request ID: d0dc7237
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+{'is_bound': True, 'is_valid': False, 'errors': {'__all__': ['Une réservation doit être spécifiée']}, 'cleaned_data': {}, 'fields': ['reason', 'wave_number']}
+
+[2024-10-29 09:19:40,890] DEBUG: Réservation récupérée
+Request ID: c68fc616
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+{'reservation_status': 'confirmed', 'total_price': '12100.00', 'client': 'kouakou_junior'}
+
+[2024-10-29 09:19:40,890] INFO: Succès de get_context_data
+Request ID: d0dc7237
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+Opération terminée avec succès
+
+[2024-10-29 09:25:44,799] INFO: Début de get_context_data
+Request ID: 033141e0
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+
+
+[2024-10-29 09:25:44,809] DEBUG: Réservation récupérée
+Request ID: ecfbf524
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+{'reservation_status': 'confirmed', 'total_price': '12100.00', 'client': 'kouakou_junior'}
+
+[2024-10-29 09:25:44,811] INFO: Succès de get_context_data
+Request ID: 033141e0
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+Opération terminée avec succès
+
+[2024-10-29 09:25:54,546] INFO: Début de get_context_data
+Request ID: 39944327
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+
+
+[2024-10-29 09:25:54,549] DEBUG: Réservation récupérée
+Request ID: b72e6265
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+{'reservation_status': 'confirmed', 'total_price': '12100.00', 'client': 'kouakou_junior'}
+
+[2024-10-29 09:25:54,549] INFO: Succès de get_context_data
+Request ID: 39944327
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'GET', 'path': '/remboursement/demande/1/'}
+Opération terminée avec succès
+
+[2024-10-29 09:26:02,084] INFO: Début de form_valid
+Request ID: b363f0a4
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+
+
+[2024-10-29 09:26:02,099] INFO: Demande de remboursement créée avec succès
+Request ID: 79a14c47
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+{'refund_request_id': 1, 'amount': '12100.00', 'created_at': '2024-10-29 09:26:02.087049+00:00'}
+
+[2024-10-29 09:26:02,109] INFO: Succès de form_valid
+Request ID: b363f0a4
+User: kouakou_junior
+Reservation: 1
+Data: {'method': 'POST', 'path': '/remboursement/demande/1/'}
+Opération terminée avec succès
+
+[2024-10-29 10:40:46,283] INFO: Début de get_context_data
+Request ID: 7d3f3766
+User: kouakou_junior
+Reservation: 2
+Data: {'method': 'GET', 'path': '/remboursement/demande/2/'}
+
+
+[2024-10-29 10:40:46,296] DEBUG: Réservation récupérée
+Request ID: 9ee90407
+User: kouakou_junior
+Reservation: 2
+Data: {'method': 'GET', 'path': '/remboursement/demande/2/'}
+{'reservation_status': 'confirmed', 'total_price': '24200.00', 'client': 'kouakou_junior'}
+
+[2024-10-29 10:40:46,296] INFO: Succès de get_context_data
+Request ID: 7d3f3766
+User: kouakou_junior
+Reservation: 2
+Data: {'method': 'GET', 'path': '/remboursement/demande/2/'}
+Opération terminée avec succès
+
+[2024-10-29 10:40:56,803] INFO: Début de form_valid
+Request ID: b60d360e
+User: kouakou_junior
+Reservation: 2
+Data: {'method': 'POST', 'path': '/remboursement/demande/2/'}
+
+
+[2024-10-29 10:40:56,813] INFO: Demande de remboursement créée avec succès
+Request ID: 4d331b44
+User: kouakou_junior
+Reservation: 2
+Data: {'method': 'POST', 'path': '/remboursement/demande/2/'}
+{'refund_request_id': 2, 'amount': '24200.00', 'created_at': '2024-10-29 10:40:56.803449+00:00'}
+
+[2024-10-29 10:40:56,820] INFO: Succès de form_valid
+Request ID: b60d360e
+User: kouakou_junior
+Reservation: 2
+Data: {'method': 'POST', 'path': '/remboursement/demande/2/'}
+Opération terminée avec succès
+

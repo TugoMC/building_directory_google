@@ -1,55 +1,128 @@
-
-<!-- templates/remboursements/refund_request_list.html -->
 {% extends "base.html" %}
-
+{% load static %}
 {% block content %}
-<div class="container my-4">
-    <h2>Demandes de remboursement</h2>
-    
-    {% if refund_requests %}
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Réservation</th>
-                    <th>Montant</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for request in refund_requests %}
-                <tr>
-                    <td>{{ request.created_at|date:"d/m/Y" }}</td>
-                    <td>{{ request.reservation.reference }}</td>
-                    <td>{{ request.refund_amount }} FCFA</td>
-                    <td>
-                        {% if request.processed_at %}
-                            {% if request.rejection_reason %}
-                                <span class="badge bg-danger">Refusée</span>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">Demandes de remboursement</h1>
+            {% if not user.is_staff %}
+                <p>Pour faire une demande de remboursement, veuillez accéder à votre réservation concernée.</p>
+            {% endif %}
+        </div>
+
+        {% if refund_requests %}
+            <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                {% if user.is_staff %}
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                                {% endif %}
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de demande</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Professionnel</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for request in refund_requests %}
+                                <tr>
+                                    {% if user.is_staff %}
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm font-medium text-gray-900">{{ request.requester.get_full_name }}</div>
+                                            <div class="text-sm text-gray-500">{{ request.requester.email }}</div>
+                                        </td>
+                                    {% endif %}
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-900">{{ request.created_at|date:"d/m/Y" }}</div>
+                                        <div class="text-sm text-gray-500">{{ request.created_at|date:"H:i" }}</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-900">{{ request.reservation.professionnel.full_name }}</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-900">{{ request.refund_amount }} FCFA</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {% if request.reservation.status == 'refund_requested' %} 
+                                            bg-yellow-100 text-yellow-800
+                                        {% elif request.reservation.status == 'refund_accepted' %}
+                                            bg-green-100 text-green-800
+                                        {% elif request.reservation.status == 'refund_rejected' %}
+                                            bg-red-100 text-red-800
+                                        {% endif %}">
+                                            {% if request.reservation.status == 'refund_requested' %}
+                                                Remboursement demandé
+                                            {% elif request.reservation.status == 'refund_accepted' %}
+                                                Remboursement accepté
+                                            {% elif request.reservation.status == 'refund_rejected' %}
+                                                Remboursement refusé
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="{% url 'remboursements:refund_request_detail' pk=request.pk %}" 
+                                           class="text-blue-600 hover:text-blue-900">Voir détails</a>
+                                        {% if user.is_staff and request.reservation.status == 'refund_requested' %}
+                                            <a href="{% url 'remboursements:process_refund' pk=request.pk reservation_pk=request.reservation.pk %}" 
+                                               class="ml-3 text-indigo-600 hover:text-indigo-900">Traiter</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <div class="bg-white shadow sm:rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="text-center">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Aucune demande de remboursement</h3>
+                        <p class="mt-2 text-sm text-gray-500">
+                            {% if user.is_staff %}
+                                Il n'y a actuellement aucune demande de remboursement à traiter.
                             {% else %}
-                                <span class="badge bg-success">Acceptée</span>
+                                Vous n'avez pas encore fait de demande de remboursement. Pour faire une demande, veuillez accéder à votre réservation concernée.
                             {% endif %}
-                        {% else %}
-                            <span class="badge bg-warning">En attente</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'remboursements:refund_request_detail' request.pk %}" 
-                           class="btn btn-sm btn-outline-primary">
-                            Détails
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if is_paginated %}
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}"
+                           class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Précédent
                         </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}"
+                           class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Suivant
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Affichage de <span class="font-medium">{{ page_obj.start_index }}</span> à
+                            <span class="font-medium">{{ page_obj.end_index }}</span> sur
+                            <span class="font-medium">{{ paginator.count }}</span> résultats
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     </div>
-    {% else %}
-    <div class="alert alert-info">
-        Aucune demande de remboursement n'a été trouvée.
-    </div>
-    {% endif %}
 </div>
+
 {% endblock %}

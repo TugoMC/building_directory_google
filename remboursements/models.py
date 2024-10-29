@@ -5,7 +5,13 @@ from django.core.exceptions import ValidationError
 import re
 
 def validate_wave_number(value):
-    pass
+    # Expression régulière pour le format +225 XX XX XX XX XX
+    pattern = r"^\+225\s\d{2}\s\d{2}\s\d{2}\s\d{2}\s\d{2}$"
+    
+    if not re.match(pattern, value):
+        raise ValidationError(
+            "Le numéro Wave doit être au format : +225 XX XX XX XX XX"
+        )
 
 class RefundRequest(models.Model):
     reservation = models.OneToOneField(
@@ -28,6 +34,7 @@ class RefundRequest(models.Model):
         help_text="Votre numéro Wave Mobile",
         validators=[validate_wave_number]
     )
+
     created_at = models.DateTimeField(auto_now_add=True)
     processed_at = models.DateTimeField(null=True, blank=True)
     processed_by = models.ForeignKey(

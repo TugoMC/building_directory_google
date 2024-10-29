@@ -1,6 +1,9 @@
 from django import forms
 from .models import RefundRequest
 
+from django import forms
+from .models import RefundRequest
+
 class RefundRequestForm(forms.ModelForm):
     class Meta:
         model = RefundRequest
@@ -19,6 +22,25 @@ class RefundRequestForm(forms.ModelForm):
                 }
             ),
         }
+
+    def __init__(self, *args, **kwargs):
+        self.reservation = kwargs.pop('reservation', None)
+        super().__init__(*args, **kwargs)
+        
+        if self.instance and not self.instance.pk and self.reservation:
+            self.instance.reservation = self.reservation
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.instance.reservation:
+            raise forms.ValidationError("Une réservation doit être spécifiée")
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        return instance
 
 class RefundProcessForm(forms.Form):
     ACTIONS = [

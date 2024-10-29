@@ -1,34 +1,128 @@
-<!-- templates/remboursements/refund_request_form.html -->
 {% extends "base.html" %}
-{% load crispy_forms_tags %}
+{% load static %}
 
 {% block content %}
-<div class="container my-4">
-    <h2>Demande de remboursement</h2>
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="card-title mb-0">Détails de la réservation</h5>
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">Demande de remboursement</h1>
+
+        {# Informations sur la réservation #}
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+            <div class="px-4 py-5 sm:px-6">
+                <h2 class="text-lg leading-6 font-medium text-gray-900">
+                    Détails de la réservation
+                </h2>
+            </div>
+            <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+                <dl class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Professionnel</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ reservation.professionnel.full_name }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Montant total</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ reservation.total_price }} FCFA</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Date de réservation</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ reservation.created_at|date:"d/m/Y" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Statut</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ reservation.get_status_display }}</dd>
+                    </div>
+                </dl>
+            </div>
         </div>
-        <div class="card-body">
-            <p><strong>Référence :</strong> {{ reservation.reference }}</p>
-            <p><strong>Montant total :</strong> {{ reservation.total_price }} FCFA</p>
-            <p><strong>Date de réservation :</strong> {{ reservation.created_at|date:"d/m/Y" }}</p>
+
+        {# Formulaire de remboursement #}
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h2 class="text-lg leading-6 font-medium text-gray-900">
+                    Formulaire de remboursement
+                </h2>
+                <p class="mt-1 text-sm text-gray-500">
+                    Veuillez remplir les informations ci-dessous pour soumettre votre demande.
+                </p>
+            </div>
+            <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="rounded-md bg-red-50 p-4 mb-4">
+                        <div class="flex">
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-red-800">
+                                    Erreurs de validation
+                                </h3>
+                                <div class="mt-2 text-sm text-red-700">
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        {% for error in form.non_field_errors %}
+                                        <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="space-y-4">
+                        {# Champ Motif #}
+                        <div>
+                            <label for="{{ form.reason.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                {{ form.reason.label }}
+                            </label>
+                            <div class="mt-1">
+                                {{ form.reason }}
+                            </div>
+                            {% if form.reason.errors %}
+                            <p class="mt-2 text-sm text-red-600">
+                                {{ form.reason.errors.0 }}
+                            </p>
+                            {% endif %}
+                            {% if form.reason.help_text %}
+                            <p class="mt-2 text-sm text-gray-500">
+                                {{ form.reason.help_text }}
+                            </p>
+                            {% endif %}
+                        </div>
+
+                        {# Champ Numéro Wave #}
+                        <div>
+                            <label for="{{ form.wave_number.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                {{ form.wave_number.label }}
+                            </label>
+                            <div class="mt-1">
+                                {{ form.wave_number }}
+                            </div>
+                            {% if form.wave_number.errors %}
+                            <p class="mt-2 text-sm text-red-600">
+                                {{ form.wave_number.errors.0 }}
+                            </p>
+                            {% endif %}
+                            {% if form.wave_number.help_text %}
+                            <p class="mt-2 text-sm text-gray-500">
+                                {{ form.wave_number.help_text }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between pt-4">
+                        <a href="{% url 'remboursements:refund_request_list' %}" 
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Annuler
+                        </a>
+                        <button type="submit"
+                                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Soumettre la demande
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-
-    <form method="post" class="card">
-        {% csrf_token %}
-        <div class="card-body">
-            {{ form|crispy }}
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i> 
-                Le remboursement sera effectué via Wave Mobile au numéro indiqué.
-            </div>
-            <button type="submit" class="btn btn-primary">
-                Soumettre la demande
-            </button>
-        </div>
-    </form>
 </div>
 {% endblock %}
-
