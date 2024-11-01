@@ -3,18 +3,15 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.views import View
 from django.core.exceptions import ValidationError
 from .models import RefundRequest
 from reservations.models import Reservation
 from .forms import RefundRequestForm, RefundProcessForm
 from django.db import transaction
-
 import logging
 import traceback
 from functools import wraps
-from django.core.exceptions import ValidationError
-from django.db import transaction
+
 
 # Configuration du logger
 logger = logging.getLogger('refund_system')

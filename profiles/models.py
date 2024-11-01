@@ -36,6 +36,12 @@ class Profile(models.Model):
     profession = models.CharField("Profession", max_length=20, choices=PROFESSION_CHOICES, blank=True)
     city = models.CharField("Ville", max_length=20, choices=CITY_CHOICES, blank=True)
     commune = models.CharField("Commune", max_length=20, choices=COMMUNE_CHOICES, blank=True)
+    profile_image = models.ImageField(
+        "Photo de profil",
+        upload_to='profile_images/',
+        blank=True,
+        null=True
+    )
     
     def __str__(self):
         return f"{self.user.email}'s profile"

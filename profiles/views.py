@@ -10,7 +10,7 @@ def profile_view(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
     
     if request.method == 'POST':
-        form = ProfileForm(request.POST, instance=profile)
+        form = ProfileForm(request.POST, request.FILES, instance=profile)  # Ajout de request.FILES
         if form.is_valid():
             form.save()
             messages.success(request, 'Votre profil a été mis à jour avec succès!')
@@ -18,7 +18,6 @@ def profile_view(request):
     else:
         form = ProfileForm(instance=profile)
     
-    # Récupérer les réservations de l'utilisateur
     reservations = Reservation.objects.filter(client=request.user).order_by('-created_at')
     
     return render(request, 'profiles/profile.html', {

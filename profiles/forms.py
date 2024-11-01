@@ -4,11 +4,10 @@ from .models import Profile
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['last_name', 'first_name', 'profession', 'city', 'commune']
+        fields = ['last_name', 'first_name', 'profession', 'city', 'commune', 'profile_image']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Rendre tous les champs optionnels
         for field in self.fields.values():
             field.required = False
         

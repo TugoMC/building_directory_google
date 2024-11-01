@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
+{% block title %}Mes demandes de remboursement{% endblock %}
 {% block content %}
 
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 py-8" style="margin-bottom: 500px;">
     <div class="max-w-6xl mx-auto">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold">Demandes de remboursement</h1>
@@ -54,6 +55,8 @@
                                             bg-green-100 text-green-800
                                         {% elif request.reservation.status == 'refund_rejected' %}
                                             bg-red-100 text-red-800
+                                        {% elif request.reservation.status == 'refunded' %}
+                                            bg-blue-100 text-blue-800
                                         {% endif %}">
                                             {% if request.reservation.status == 'refund_requested' %}
                                                 Remboursement demandé
@@ -61,6 +64,8 @@
                                                 Remboursement accepté
                                             {% elif request.reservation.status == 'refund_rejected' %}
                                                 Remboursement refusé
+                                                {% elif request.reservation.status == 'refunded' %}
+                                                Remboursé
                                             {% endif %}
                                         </span>
                                     </td>
@@ -124,5 +129,7 @@
         {% endif %}
     </div>
 </div>
+
+
 
 {% endblock %}

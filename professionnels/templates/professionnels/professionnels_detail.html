@@ -11,14 +11,12 @@
             <div class="flex items-center">
                 <!-- Photo de profil -->
                 {% if professionnel.profile_photo %}
-                    <img src="{{ professionnel.profile_photo.url }}" 
-                         alt="{{ professionnel.full_name }}"
-                         class="w-32 h-32 rounded-full object-cover">
-                {% else %}
-                    <div class="w-32 h-32 bg-gray-300 rounded-full flex items-center justify-center">
-                        <span class="text-4xl text-gray-600">{{ professionnel.full_name|first }}</span>
-                    </div>
-                {% endif %}
+  <img src="{{ professionnel.profile_photo.url }}" class="w-32 h-32 rounded-full object-cover" alt="{{ professionnel.full_name }}">
+{% else %}
+  <div class="w-32 h-32 bg-gray-300 rounded-full flex items-center justify-center">
+    <span class="text-4xl text-gray-600">{{ professionnel.full_name|first }}</span>
+  </div>
+{% endif %}
 
                 <!-- Informations de base -->
                 <div class="ml-8">

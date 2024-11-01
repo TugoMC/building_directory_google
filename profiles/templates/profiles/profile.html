@@ -18,12 +18,22 @@
                     <!-- Card Profil -->
                     <div class="bg-white shadow rounded-lg mb-6">
                         <div class="p-6">
+                            
                             <div class="text-center">
-                                <div class="inline-block h-20 w-20 rounded-full bg-gray-200 mb-4">
-                                    <span class="text-4xl leading-20 text-gray-500">{{ user.email|slice:":1"|upper }}</span>
-                                </div>
+                                {% if user.profile.profile_image %}
+                                    <img src="{{ user.profile.profile_image.url }}" 
+                                         class="inline-block h-20 w-20 rounded-full object-cover mb-4"
+                                         alt="Photo de profil">
+                                {% else %}
+                                    <div class="inline-block h-20 w-20 rounded-full bg-gray-200 mb-4">
+                                        <span class="text-4xl leading-20 text-gray-500">
+                                            {{ user.email|slice:":1"|upper }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            
                                 <h2 class="text-xl font-semibold text-gray-900">{{ user.email }}</h2>
-                                <p class="text-sm text-gray-500">Membre depuis {{ user.date_joined|date:"F Y" }}</p>
+                                <p>Membre depuis {{ user.date_joined|date:"F Y" }}</p>
                             </div>
                             
                             <div class="mt-6 border-t border-gray-200 pt-4">
@@ -107,14 +117,16 @@
 <!-- Modal de modification du profil -->
 <div id="profile-modal" class="hidden fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Overlay -->
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
 
         <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <form method="post" class="p-6">
+            <!-- Formulaire avec enctype -->
+            <form method="post" enctype="multipart/form-data" class="p-6">
                 {% csrf_token %}
                 <div class="space-y-6">
                     <div>
-                        <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">
+                        <h3 id="modal-title" class="text-lg font-medium leading-6 text-gray-900">
                             Modifier mon profil
                         </h3>
                         <p class="mt-1 text-sm text-gray-500">
@@ -122,29 +134,69 @@
                         </p>
                     </div>
 
-                    {% for field in form %}
+                    <!-- Champ image avec prévisualisation -->
                     <div>
-                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                            {{ field.label }}
+                        <label class="block text-sm font-medium text-gray-700">
+                            Photo de profil
                         </label>
-                        <div class="mt-1">
-                            {{ field|addclass:"shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" }}
+                        <div class="mt-1 flex items-center">
+                            <div class="inline-block h-12 w-12 rounded-full overflow-hidden bg-gray-100">
+                                {% if user.profile.profile_image %}
+                                    <img src="{{ user.profile.profile_image.url }}" 
+                                         class="h-full w-full object-cover"
+                                         id="preview-image"
+                                         alt="Photo de profil actuelle">
+                                {% else %}
+                                    <span class="h-12 w-12 flex items-center justify-center text-gray-500 text-xl">
+                                        {{ user.email|slice:":1"|upper }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div class="ml-4">
+                                <div class="relative">
+                                    <input type="file" 
+                                           name="profile_image" 
+                                           id="profile_image"
+                                           accept="image/*"
+                                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                           onchange="previewImage(this)">
+                                    <label for="profile_image" 
+                                           class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                        Changer la photo
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        {% if field.errors %}
-                        <p class="mt-2 text-sm text-red-600">{{ field.errors.0 }}</p>
-                        {% endif %}
                     </div>
+
+                    <!-- Autres champs du formulaire -->
+                    {% for field in form %}
+                        {% if field.name != 'profile_image' %}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">
+                                    {{ field.label }}
+                                </label>
+                                <div class="mt-1">
+                                    {{ field|addclass:"shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" }}
+                                </div>
+                                {% if field.errors %}
+                                    <p class="mt-2 text-sm text-red-600">
+                                        {{ field.errors.0 }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     {% endfor %}
                 </div>
 
                 <div class="mt-6 flex justify-end space-x-3">
                     <button type="button" 
-                            onclick="document.getElementById('profile-modal').classList.add('hidden')"
-                            class="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                            onclick="closeModal()"
+                            class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Annuler
                     </button>
-                    <button type="submit" 
-                            class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700">
+                    <button type="submit"
+                            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Enregistrer
                     </button>
                 </div>
@@ -152,4 +204,32 @@
         </div>
     </div>
 </div>
+
+<!-- Script pour la prévisualisation de l'image -->
+<script>
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        
+        reader.onload = function(e) {
+            var previewElement = document.getElementById('preview-image');
+            if (!previewElement) {
+                // Si l'élément preview n'existe pas, créer une nouvelle image
+                previewElement = document.createElement('img');
+                previewElement.id = 'preview-image';
+                previewElement.className = 'h-full w-full object-cover';
+                input.parentElement.parentElement.parentElement.querySelector('.rounded-full').innerHTML = '';
+                input.parentElement.parentElement.parentElement.querySelector('.rounded-full').appendChild(previewElement);
+            }
+            previewElement.src = e.target.result;
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function closeModal() {
+    document.getElementById('profile-modal').classList.add('hidden');
+}
+</script>
 {% endblock %}

@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'professionnels',
     'reservations',
     'remboursements',
+    'paiements',
 ]
 
 MIDDLEWARE = [
@@ -205,3 +206,6 @@ CRONJOBS = [
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"  # ou "bootstrap4" selon la version
 CRISPY_TEMPLATE_PACK = "bootstrap5"  # ou "bootstrap4"
 
+
+MEDIA_URL = '/photos/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'photo')
