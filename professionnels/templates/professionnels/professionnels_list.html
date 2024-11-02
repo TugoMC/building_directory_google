@@ -4,10 +4,10 @@
 {% block title %}Liste des professionnels{% endblock %}
 
 {% block content %}
-<div class="flex h-screen bg-gray-50">
+<div class="flex h-screen bg-gray-50 border border-gray-200 rounded-lg">
     <!-- Sidebar des filtres -->
-    <div class="hidden md:flex md:w-64 md:flex-col">
-        <div class="flex flex-col flex-grow pt-5 bg-white overflow-y-auto border-r border-gray-200">
+    <div class="hidden md:flex md:w-64 md:flex-col ">
+        <div class="flex flex-col flex-grow pt-5 bg-white overflow-y-auto border border-gray-200 rounded-lg">
             <div class="flex items-center flex-shrink-0 px-4">
                 <h2 class="text-lg font-semibold text-gray-900">Filtres</h2>
             </div>
@@ -74,96 +74,120 @@
     </div>
 
     <!-- Contenu principal -->
-    <div class="md:pl-0 flex flex-col flex-1">
-        <main class="flex-1">
-            <div class="py-6">
+    <!-- Contenu principal -->
+    <div class="flex-1 overflow-auto">
+        <div class="p-6">
+            <div class="max-w-[1400px] mx-auto">
                 <!-- En-tête -->
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                    <div class="flex items-center justify-between">
-                        <h1 class="text-2xl font-semibold text-gray-900">Liste des Professionnels</h1>
-                        <!-- Bouton pour afficher les filtres sur mobile -->
-                        <button type="button" class="md:hidden inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="text-2xl font-bold text-gray-900">
+                        Nos Professionnels
+                        <span class="text-sm font-normal text-gray-500 ml-2">({{ professionnels|length }} disponibles)</span>
+                    </h1>
+                    
+                    <div class="flex gap-4">
+                        <button class="lg:hidden flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-white rounded-lg border border-gray-300 hover:bg-gray-50">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
                             </svg>
                             Filtres
                         </button>
                     </div>
                 </div>
 
-                <!-- Liste des professionnels -->
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                    <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {% for professionnel in professionnels %}
-                            <div class="bg-white overflow-hidden shadow rounded-lg divide-y divide-gray-200 hover:shadow-lg transition-shadow duration-200">
-                                <!-- En-tête de la carte -->
-                                <div class="px-4 py-5 sm:px-6">
-                                    <div class="flex items-center">
+                <!-- Grille des professionnels -->
+                <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+                    {% for professionnel in professionnels %}
+                    <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 w-full mb-6">
+                        <div class="p-8">
+                            <div class="flex flex-col space-y-6">
+                                <!-- Top Section - Photo and Main Info -->
+                                <div class="flex items-start gap-12">
+                                    <!-- Photo Section -->
+                                    <div class="flex-shrink-0">
                                         {% if professionnel.profile_photo %}
-                                            <img src="{{ professionnel.profile_photo.url }}" 
-                                                 alt="{{ professionnel.full_name }}"
-                                                 class="w-16 h-16 rounded-full object-cover">
+                                        <img src="{{ professionnel.profile_photo.url }}" 
+                                             alt="{{ professionnel.full_name }}"
+                                             class="h-28 w-28 object-cover rounded-xl border-4 border-gray-50">
                                         {% else %}
-                                            <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
-                                                <span class="text-2xl font-medium text-indigo-700">
-                                                    {{ professionnel.full_name|first }}
-                                                </span>
-                                            </div>
+                                        <div class="h-28 w-28 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center border-4 border-gray-50">
+                                            <span class="text-3xl font-bold text-white">
+                                                {{ professionnel.full_name|first }}
+                                            </span>
+                                        </div>
                                         {% endif %}
-                                        <div class="ml-4">
-                                            <h3 class="text-lg leading-6 font-medium text-gray-900">
-                                                {{ professionnel.full_name }}
-                                            </h3>
-                                            <p class="text-sm text-gray-500">
+                                    </div>
+                  
+                                    <!-- Main Info Section - Increased width -->
+                                    <div class="flex-1 min-w-[400px]">
+                                        <h3 class="text-2xl font-semibold text-gray-900">{{ professionnel.full_name }}</h3>
+                                        
+                                        <div class="flex items-center gap-4 mt-3">
+                                            <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-indigo-50 text-indigo-700">
                                                 {{ professionnel.specialization }}
-                                            </p>
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="mt-4 grid grid-cols-2 gap-8">
+                                            <div class="flex items-center gap-3">
+                                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                </svg>
+                                                <span class="text-sm text-gray-600">{{ professionnel.years_of_experience }} ans d'expérience</span>
+                                            </div>
+                  
+                                            <div class="flex items-center gap-3">
+                                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                <span class="text-sm text-gray-600">{{ professionnel.city }}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <!-- Informations -->
-                                <div class="px-4 py-4 sm:px-6 space-y-2">
-                                    <div class="flex items-center text-sm text-gray-500">
-                                        <!-- Icône localisation -->
-                                        <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                                        </svg>
-                                        {{ professionnel.city }}
+                  
+                                    <!-- Price and Action Section - More spacing -->
+                                    <div class="flex flex-col items-end gap-6 ml-auto">
+                                        <div class="text-right">
+                                            <span class="text-3xl font-bold text-indigo-600">
+                                                {{ professionnel.daily_rate|floatformat:0 }}
+                                            </span>
+                                            <span class="text-gray-500 ml-2">FCFA/jour</span>
+                                        </div>
+                                        
+                                        <a href="{% url 'professionnel_detail' professionnel.id %}"
+                                           class="inline-flex items-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+                                            Voir le profil
+                                            <svg class="ml-2 -mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </a>
                                     </div>
-
-                                    <div class="flex items-center text-sm text-gray-500">
-                                        <!-- Icône niveau -->
-                                        <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1zM2 9v3.53c1.76.77 3.78 1.22 6 1.42 2.22-.2 4.24-.65 6-1.42V9h-2v1a1 1 0 11-2 0V9H8v1a1 1 0 11-2 0V9H2z" clip-rule="evenodd" />
-                                        </svg>
-                                        Niveau : {{ professionnel.skill_level }}
-                                    </div>
                                 </div>
-
-                                <!-- Bouton de détails -->
-                                <div class="px-4 py-4 sm:px-6">
-                                    <a href="{% url 'professionnel_detail' professionnel.id %}" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
-                                        Voir le profil
-                                    </a>
+                  
+                                <!-- Bottom Section - Availability -->
+                                <div class="flex items-center gap-2 text-sm text-gray-500 pt-4 border-t border-gray-100">
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span>Disponible : {{ professionnel.get_workdays_list|join:", " }}</span>
                                 </div>
                             </div>
-                        {% endfor %}
-
-
-
+                        </div>
                     </div>
+                    {% endfor %}
+                  </div>
 
-
-                </div>
-                <!-- Nouvelle section pour la pagination -->
-      
-  
+                <!-- Pagination -->
+                
             </div>
-        </main>
+        </div>
     </div>
+
 </div>
+
 {% if page_obj.paginator.num_pages > 1 %}
-<div class="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+<div class="mt-5 flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-lg">
     <div class="flex flex-1 justify-between sm:hidden">
     {% if page_obj.has_previous %}
         <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Précédent</a>

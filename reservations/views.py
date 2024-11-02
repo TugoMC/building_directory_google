@@ -20,6 +20,20 @@ def reservation_create(request, professionnel_id):
     # Obtenir l'année et le mois depuis l'URL ou utiliser la date actuelle
     year = int(request.GET.get('year', date.today().year))
     month = int(request.GET.get('month', date.today().month))
+    reserved_dates = set()
+    confirmed_reservations = Reservation.objects.filter(
+        professionnel=professionnel,
+        status=ReservationStatus.CONFIRMED
+    )
+    
+    for reservation in confirmed_reservations:
+        dates = (json.loads(reservation.selected_dates) 
+                if isinstance(reservation.selected_dates, str) 
+                else reservation.selected_dates)
+        for date_str in dates:
+            reserved_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            if reserved_date.year == year and reserved_date.month == month:
+                reserved_dates.add(reserved_date.day)
     
     if request.method == "POST":
         logger.info(f"Received POST request for reservation creation. Data: {request.POST}")
@@ -113,6 +127,7 @@ def reservation_create(request, professionnel_id):
         'previous_month_days': previous_month_days,
         'current_day': date.today().day if date.today().month == month and date.today().year == year else None,
         'available_days': available_days,
+        'reserved_dates': reserved_dates,
     }
     
     return render(request, 'reservations/reservation_form.html', context)

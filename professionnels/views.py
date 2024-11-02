@@ -1,5 +1,8 @@
 # views.py
+import json
 from django.views.generic import ListView, DetailView
+
+from reservations.models import ReservationStatus
 from .models import Professionnel
 from django.db.models import Q
 from calendar import monthrange
@@ -76,14 +79,20 @@ class ProfessionnelDetailView(DetailView):
     context_object_name = 'professionnel'
 
     def get_calendar_data(self, year, month):
-        # Obtenir le nombre de jours dans le mois
-        _, num_days = monthrange(year, month)
+        # Get current date for comparison
+        current_date = date.today()
         
-        # Obtenir les jours de disponibilité du professionnel
+        # If requested date is before current month, return current month data
+        if year < current_date.year or (year == current_date.year and month < current_date.month):
+            year = current_date.year
+            month = current_date.month
+        
+        # Rest of the existing code remains the same
+        _, num_days = monthrange(year, month)
         workdays = self.object.get_workdays_list()
         available_days = []
+        reserved_days = []
         
-        # Convertir les noms de jours en français vers l'anglais pour la comparaison
         fr_to_en = {
             'Lundi': 'Monday',
             'Mardi': 'Tuesday',
@@ -96,13 +105,24 @@ class ProfessionnelDetailView(DetailView):
         
         en_workdays = [fr_to_en[day.strip()] for day in workdays]
         
-        # Pour chaque jour du mois
+        confirmed_reservations = self.object.reservations.filter(
+            status=ReservationStatus.CONFIRMED
+        )
+        
+        reserved_dates = set()
+        for reservation in confirmed_reservations:
+            dates = json.loads(reservation.selected_dates) if isinstance(reservation.selected_dates, str) else reservation.selected_dates
+            reserved_dates.update(dates)
+        
         for day in range(1, num_days + 1):
             current_date = date(year, month, day)
-            if current_date.strftime('%A') in en_workdays:
+            date_str = current_date.strftime('%Y-%m-%d')
+            
+            if date_str in reserved_dates:
+                reserved_days.append(day)
+            elif current_date.strftime('%A') in en_workdays:
                 available_days.append(day)
         
-        # Calculer les jours du mois précédent
         first_day_weekday = date(year, month, 1).weekday()
         
         if first_day_weekday > 0:
@@ -113,23 +133,51 @@ class ProfessionnelDetailView(DetailView):
         else:
             previous_month_days = []
             
+        # Add a flag to indicate if we're in the current month
+        is_current_month = (year == date.today().year and month == date.today().month)
+            
         return {
             'days': list(range(1, num_days + 1)),
             'current_day': date.today().day if date.today().year == year and date.today().month == month else None,
             'month_name': calendar.month_name[month] + f" {year}",
             'available_days': available_days,
-            'previous_month_days': previous_month_days
+            'reserved_days': reserved_days,
+            'previous_month_days': previous_month_days,
+            'is_current_month': is_current_month  # New field
         }
-
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Obtenir le mois et l'année actuels par défaut
+        # Récupérer les réservations confirmées
+        confirmed_reservations = self.object.reservations.filter(
+            status=ReservationStatus.CONFIRMED
+        ).order_by('selected_dates')
+        
+        # Préparer les données des réservations
+        prepared_reservations = []
+        for reservation in confirmed_reservations:
+            dates = json.loads(reservation.selected_dates) if isinstance(reservation.selected_dates, str) else reservation.selected_dates
+            formatted_dates = [datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y') for date in dates]
+            
+            prepared_reservations.append({
+                'id': reservation.id,
+                'dates': formatted_dates,
+                'total_dates': len(formatted_dates),
+                'status': reservation.get_status_display(),
+                'description': reservation.description,
+                'created_at': reservation.created_at,
+                'total_price': reservation.total_price
+            })
+        
+        context['confirmed_reservations'] = prepared_reservations
+        
+        # Code calendrier existant
         current_date = datetime.now()
         context.update(self.get_calendar_data(current_date.year, current_date.month))
         
         return context
-
+    
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
         
@@ -141,3 +189,5 @@ class ProfessionnelDetailView(DetailView):
             return JsonResponse(calendar_data)
             
         return super().get(request, *args, **kwargs)
+    
+    

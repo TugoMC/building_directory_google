@@ -44,11 +44,25 @@ class ReservationForm(forms.ModelForm):
                             "Vous ne pouvez pas sélectionner la date d'aujourd'hui ou une date passée."
                         )
                 
+                # Vérifier les conflits de réservation
+                is_available, conflicting_dates = Reservation.check_date_availability(
+                    self.professionnel, dates
+                )
+                
+                if not is_available:
+                    # Formater les dates en conflit pour l'affichage
+                    formatted_dates = [d.strftime('%d/%m/%Y') for d in conflicting_dates]
+                    dates_str = ", ".join(formatted_dates)
+                    raise forms.ValidationError(
+                        f"Le professionnel est déjà réservé pour les dates suivantes : {dates_str}"
+                    )
+                
                 return selected_dates
             except json.JSONDecodeError:
                 raise forms.ValidationError("Format de dates invalide")
         return selected_dates
-
+    
+    
 class ReservationAdminForm(forms.ModelForm):
     class Meta:
         model = Reservation

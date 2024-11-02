@@ -221,3 +221,40 @@ class Reservation(models.Model):
                 self.last_status_change = timezone.now()
         super().save(*args, **kwargs)
         
+        
+    @classmethod
+    def check_date_availability(cls, professionnel, dates_to_check):
+        """
+        Vérifie si les dates sont disponibles pour un professionnel donné.
+        Retourne un tuple (bool, list) : (disponibilité, dates_conflits)
+        """
+        if isinstance(dates_to_check, str):
+            dates_to_check = json.loads(dates_to_check)
+            
+        dates_to_check = [datetime.strptime(date_str, '%Y-%m-%d').date() 
+                         for date_str in dates_to_check]
+        
+        # Récupérer toutes les réservations confirmées pour ce professionnel
+        confirmed_reservations = cls.objects.filter(
+            professionnel=professionnel,
+            status=ReservationStatus.CONFIRMED
+        )
+        
+        # Vérifier chaque réservation confirmée
+        conflicting_dates = []
+        for reservation in confirmed_reservations:
+            reserved_dates = (json.loads(reservation.selected_dates) 
+                            if isinstance(reservation.selected_dates, str) 
+                            else reservation.selected_dates)
+            
+            reserved_dates = [datetime.strptime(date_str, '%Y-%m-%d').date() 
+                            for date_str in reserved_dates]
+            
+            # Trouver les dates qui se chevauchent
+            conflicts = set(dates_to_check) & set(reserved_dates)
+            conflicting_dates.extend(conflicts)
+        
+        # Supprimer les doublons et trier les dates
+        conflicting_dates = sorted(set(conflicting_dates))
+        
+        return (len(conflicting_dates) == 0, conflicting_dates)
