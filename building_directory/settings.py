@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'remboursements',
     'paiements',
     'avis',
+    'portfolios',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,74 @@
+{% extends 'base.html' %} 
+{% load static %} 
+{% block title %}{{ portfolio.title }} - Détail du projet{% endblock %} 
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white shadow rounded-lg p-6 mb-6">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-900">{{ portfolio.title }}</h1>
+                <a href="{% url 'professionnel_detail' portfolio.professionnel.id %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Retour au profil
+                </a>
+            </div>
+            {{ portfolio.description }}
+        </div>
+
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Galerie du projet</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for image in images %}
+                <div class="relative aspect-w-16 aspect-h-9 rounded-lg overflow-hidden group cursor-pointer" onclick="openLightbox('{{ image.image.url }}')">
+                    <img src="{{ image.image.url }}" alt="Image {{ forloop.counter }} du projet" class="w-full h-full object-cover transform group-hover:scale-105 transition-duration-200">
+                </div>
+                {% empty %}
+                <p>Aucune image disponible pour ce projet</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox Modal -->
+<div id="lightbox" class="fixed inset-0 hidden bg-black bg-opacity-90 z-50 flex items-center justify-center" onclick="closeLightbox()">
+    <button class="absolute top-4 right-4 text-white" onclick="closeLightbox()">
+        <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </button>
+    <img id="lightbox-image" src="" alt="Image en plein écran" class="max-h-[90vh] max-w-[90vw] object-contain">
+</div>
+
+<script>
+function openLightbox(imageUrl) {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImage = document.getElementById('lightbox-image');
+    lightboxImage.src = imageUrl;
+    lightbox.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    const lightbox = document.getElementById('lightbox');
+    lightbox.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+// Fermer le lightbox avec la touche Echap
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeLightbox();
+    }
+});
+
+// Empêcher la fermeture du lightbox lors d'un clic sur l'image
+document.getElementById('lightbox-image').addEventListener('click', function(event) {
+    event.stopPropagation();
+});
+</script>
+{% endblock %}
