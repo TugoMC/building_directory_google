@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg">
+    <div class="px-4 py-2 border-b">
+        <h2 class="font-bold mb-0">
+            {% if editing %}
+                Modifier votre avis
+            {% else %}
+                Donner votre avis
+            {% endif %}
+        </h2>
+    </div>
+
+    <div class="p-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="bg-{{ message.tags }} text-white p-4 rounded-lg mb-4">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" action="">
+            {% csrf_token %}
+            <div class="space-y-2">
+                <label>Note *</label>
+                {{ form.note }}
+                {% if form.note.errors %}
+                    <div class="text-red-500">{{ form.note.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+        
+            <div class="space-y-2">
+                <label>Commentaire *</label>
+                {{ form.commentaire }}
+                {% if form.commentaire.errors %}
+                    <div class="text-red-500">{{ form.commentaire.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+        
+            <div class="flex justify-between items-center mt-6">
+                <a href="{% url 'avis:avis_list' %}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Retour
+                </a>
+                <button type="submit" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                    {% if editing %}Mettre à jour{% else %}Publier{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

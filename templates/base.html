@@ -11,8 +11,6 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.32/sweetalert2.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.32/sweetalert2.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
 
 <style>
     .custom-swal-popup {
@@ -36,83 +34,85 @@
 </style>
 </head>
 <body class="min-h-screen bg-gray-100">
-    <header class="absolute inset-x-0 top-0 z-50">
-        <nav class="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
-            <div class="flex lg:flex-1">
-                <a href="{% url 'home' %}" class="-m-1.5 p-1.5">
-                    <span class="sr-only">ExpertHub</span>
-                    <img class="h-8 w-auto" src="{% static 'images/logo.png' %}" alt="ExpertHub">
-                </a>
-            </div>
-            <div class="flex lg:hidden">
-                <button type="button" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700" x-on:click="isOpen = !isOpen">
-                    <span class="sr-only">Ouvrir le menu principal</span>
-                    <svg class="h-6 w-6" x-show="!isOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                    <svg class="h-6 w-6" x-show="isOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <div class="hidden lg:flex lg:gap-x-12">
-                <a href="{% url 'home' %}" class="text-sm font-semibold leading-6 text-gray-900 {% if request.resolver_match.url_name == 'home' %}text-indigo-600{% endif %}">Accueil</a>
-                <a href="{% url 'professionnels_list' %}" class="text-sm font-semibold leading-6 text-gray-900 {% if request.resolver_match.url_name == 'professionnels_list' %}text-indigo-600{% endif %}">Professionnels</a>
-            </div>
-            <div class="hidden lg:flex lg:flex-1 lg:justify-end">
-                {% if user.is_authenticated %}
-                    <a href="{% url 'profiles:profile' %}" class="text-sm font-semibold leading-6 text-indigo-600 hover:text-indigo-500 mr-4">Profile</a>
-                    <a href="{% url 'account_logout' %}" class="text-sm font-semibold leading-6 text-gray-900">Déconnexion</a>
-                {% else %}
-                    <a href="{% provider_login_url 'google' %}" class="flex items-center text-sm font-semibold leading-6 text-gray-900">
-                        <img src="{% static 'images/icons8-google.svg' %}" alt="Google" class="w-5 h-5 mr-2">
-                        Se connecter avec Google
-                    </a>
-                {% endif %}
-            </div>
-        </nav>
-    
-        <!-- Mobile menu -->
-        <div class="lg:hidden" x-show="isOpen" role="dialog" aria-modal="true" style="display: none;">
-            <div class="fixed inset-0 z-50"></div>
-            <div class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
-                <div class="flex items-center justify-between">
+    <div x-data="{ isOpen: false }">
+        <header class="absolute inset-x-0 top-0 z-50">
+            <nav class="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
+                <div class="flex lg:flex-1">
                     <a href="{% url 'home' %}" class="-m-1.5 p-1.5">
                         <span class="sr-only">ExpertHub</span>
                         <img class="h-8 w-auto" src="{% static 'images/logo.png' %}" alt="ExpertHub">
                     </a>
-                    <button type="button" class="-m-2.5 rounded-md p-2.5 text-gray-700" x-on:click="isOpen = false">
-                        <span class="sr-only">Fermer le menu</span>
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </div>
+                <div class="flex lg:hidden">
+                    <button type="button" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700" x-on:click="isOpen = !isOpen">
+                        <span class="sr-only">Ouvrir le menu principal</span>
+                        <svg class="h-6 w-6" x-show="!isOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <svg class="h-6 w-6" x-show="isOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
-                <div class="mt-6 flow-root">
-                    <div class="-my-6 divide-y divide-gray-500/10">
-                        <div class="space-y-2 py-6">
-                            <a href="{% url 'home' %}" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 {% if request.resolver_match.url_name == 'home' %}bg-gray-50{% endif %}">Accueil</a>
-                            <a href="#" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 {% if request.resolver_match.url_name == 'professionals' %}bg-gray-50{% endif %}">Professionnels</a>
-                            <a href="#" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 {% if request.resolver_match.url_name == 'services' %}bg-gray-50{% endif %}">Services</a>
-                            <a href="#" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 {% if request.resolver_match.url_name == 'about' %}bg-gray-50{% endif %}">À propos</a>
-                        </div>
-                        <div class="py-6">
-                            {% if user.is_authenticated %}
-                                <a href="{% url 'profiles:profile' %}" class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-indigo-600 hover:bg-gray-50">Profile</a>
-                                <a href="{% url 'account_logout' %}" class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">Déconnexion</a>
-                            {% else %}
-                                <a href="{% provider_login_url 'google' %}" class="-mx-3 flex items-center rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">
-                                    <img src="{% static 'images/icons8-google.svg' %}" alt="Google" class="w-5 h-5 mr-2">
-                                    Se connecter avec Google
-                                </a>
-                            {% endif %}
+                <div class="hidden lg:flex lg:gap-x-12">
+                    <a href="{% url 'home' %}" class="text-sm font-semibold leading-6 text-gray-900 {% if request.resolver_match.url_name == 'home' %}text-indigo-600{% endif %}">Accueil</a>
+                    <a href="{% url 'professionnels_list' %}" class="text-sm font-semibold leading-6 text-gray-900 {% if request.resolver_match.url_name == 'professionnels_list' %}text-indigo-600{% endif %}">Professionnels</a>
+                </div>
+                <div class="hidden lg:flex lg:flex-1 lg:justify-end">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'profiles:profile' %}" class="text-sm font-semibold leading-6 text-indigo-600 hover:text-indigo-500 mr-4">Profile</a>
+                        <a href="{% url 'account_logout' %}" class="text-sm font-semibold leading-6 text-gray-900">Déconnexion</a>
+                    {% else %}
+                        <a href="{% provider_login_url 'google' %}" class="flex items-center text-sm font-semibold leading-6 text-gray-900">
+                            <img src="{% static 'images/icons8-google.svg' %}" alt="Google" class="w-5 h-5 mr-2">
+                            Se connecter avec Google
+                        </a>
+                    {% endif %}
+                </div>
+            </nav>
+    
+            <!-- Mobile menu -->
+            <div class="lg:hidden" x-show="isOpen" role="dialog" aria-modal="true">
+                <div class="fixed inset-0 z-50"></div>
+                <div class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+                    <div class="flex items-center justify-between">
+                        <a href="{% url 'home' %}" class="-m-1.5 p-1.5">
+                            <span class="sr-only">ExpertHub</span>
+                            <img class="h-8 w-auto" src="{% static 'images/logo.png' %}" alt="ExpertHub">
+                        </a>
+                        <button type="button" class="-m-2.5 rounded-md p-2.5 text-gray-700" x-on:click="isOpen = false">
+                            <span class="sr-only">Fermer le menu</span>
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="mt-6 flow-root">
+                        <div class="-my-6 divide-y divide-gray-500/10">
+                            <div class="space-y-2 py-6">
+                                <a href="{% url 'home' %}" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 {% if request.resolver_match.url_name == 'home' %}bg-gray-50{% endif %}">Accueil</a>
+                                <a href="{% url 'professionnels_list' %}" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 {% if request.resolver_match.url_name == 'professionnels_list' %}bg-gray-50{% endif %}">Professionnels</a>
+                                <!-- Ajoutez d'autres liens ici -->
+                            </div>
+                            <div class="py-6">
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'profiles:profile' %}" class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-indigo-600 hover:bg-gray-50">Profile</a>
+                                    <a href="{% url 'account_logout' %}" class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">Déconnexion</a>
+                                {% else %}
+                                    <a href="{% provider_login_url 'google' %}" class="-mx-3 flex items-center rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">
+                                        <img src="{% static 'images/icons8-google.svg' %}" alt="Google" class="w-5 h-5 mr-2">
+                                        Se connecter avec Google
+                                    </a>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </header>
-
+        </header>
+    </div>
+    
+            
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 mt-16" role="main">
         {% block content %}{% endblock %}
     </div>

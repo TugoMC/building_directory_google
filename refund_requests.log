@@ -343,3 +343,45 @@ Reservation: 2
 Data: {'method': 'POST', 'path': '/remboursement/demande/2/'}
 Opération terminée avec succès
 
+[2024-11-02 10:28:41,807] INFO: Début de get_context_data
+Request ID: 5d281256
+User: kouakou_junior
+Reservation: 4
+Data: {'method': 'GET', 'path': '/remboursement/demande/4/'}
+
+
+[2024-11-02 10:28:41,823] DEBUG: Réservation récupérée
+Request ID: 5086e0ea
+User: kouakou_junior
+Reservation: 4
+Data: {'method': 'GET', 'path': '/remboursement/demande/4/'}
+{'reservation_status': 'confirmed', 'total_price': '48400.00', 'client': 'kouakou_junior'}
+
+[2024-11-02 10:28:41,823] INFO: Succès de get_context_data
+Request ID: 5d281256
+User: kouakou_junior
+Reservation: 4
+Data: {'method': 'GET', 'path': '/remboursement/demande/4/'}
+Opération terminée avec succès
+
+[2024-11-02 10:29:18,137] INFO: Début de form_valid
+Request ID: ff16a251
+User: kouakou_junior
+Reservation: 4
+Data: {'method': 'POST', 'path': '/remboursement/demande/4/'}
+
+
+[2024-11-02 10:29:18,152] INFO: Demande de remboursement créée avec succès
+Request ID: cb95f5ac
+User: kouakou_junior
+Reservation: 4
+Data: {'method': 'POST', 'path': '/remboursement/demande/4/'}
+{'refund_request_id': 3, 'amount': '48400.00', 'created_at': '2024-11-02 10:29:18.137107+00:00'}
+
+[2024-11-02 10:29:18,152] INFO: Succès de form_valid
+Request ID: ff16a251
+User: kouakou_junior
+Reservation: 4
+Data: {'method': 'POST', 'path': '/remboursement/demande/4/'}
+Opération terminée avec succès
+

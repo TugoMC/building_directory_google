@@ -12,6 +12,7 @@ urlpatterns = [
     path('reservation/', include('reservations.urls')),
     path('remboursement/', include('remboursements.urls')),
     path('', include('paiements.urls')),
+    path('avis/', include('avis.urls', namespace='avis')),
     
     
     

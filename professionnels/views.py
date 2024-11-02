@@ -14,6 +14,8 @@ from datetime import datetime, date
 import calendar
 from django.http import JsonResponse
 
+from django.db.models import Avg
+
 class ProfessionnelListView(ListView):
     model = Professionnel
     template_name = 'professionnels/professionnels_list.html'
@@ -21,7 +23,7 @@ class ProfessionnelListView(ListView):
     paginate_by = 6
 
     def get_queryset(self):
-        queryset = Professionnel.objects.all()
+        queryset = Professionnel.objects.all().annotate(note_moyenne=Avg('reservations__avis__note'))
         
         # Filtrage par ville
         city = self.request.GET.get('city')
@@ -74,6 +76,8 @@ class ProfessionnelListView(ListView):
 
 
 class ProfessionnelDetailView(DetailView):
+    
+    
     model = Professionnel
     template_name = 'professionnels/professionnels_detail.html'
     context_object_name = 'professionnel'
@@ -147,7 +151,23 @@ class ProfessionnelDetailView(DetailView):
         }
     
     def get_context_data(self, **kwargs):
+        
         context = super().get_context_data(**kwargs)
+        
+        # Ajouter les avis avec les informations nécessaires
+        completed_reservations = []
+        for reservation in self.object.reservations.filter(status=ReservationStatus.COMPLETED):
+            if hasattr(reservation, 'avis'):
+                completed_reservations.append({
+                    'id': reservation.id,
+                    'last_status_change': reservation.last_status_change,
+                    'avis': reservation.avis,
+                    'client_username': reservation.avis.client.username  # Utiliser le nom d'utilisateur de l'avis
+                })
+        context['completed_reservations'] = completed_reservations
+
+
+# Ajouter les avis avec les informations nécessaires        
         
         # Récupérer les réservations confirmées
         confirmed_reservations = self.object.reservations.filter(

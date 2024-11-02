@@ -3,17 +3,18 @@
 {% block title %}Mes demandes de remboursement{% endblock %}
 {% block content %}
 
-<div class="container mx-auto px-4 py-8" style="margin-bottom: 500px;">
+<div class="container mx-auto px-4 py-8 mb-32">
     <div class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">Demandes de remboursement</h1>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <h1 class="text-xl md:text-2xl font-bold">Demandes de remboursement</h1>
             {% if not user.is_staff %}
-                <p>Pour faire une demande de remboursement, veuillez accéder à votre réservation concernée.</p>
+                <p class="text-sm md:text-base">Pour faire une demande de remboursement, veuillez accéder à votre réservation concernée.</p>
             {% endif %}
         </div>
 
         {% if refund_requests %}
-            <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <!-- Version desktop -->
+            <div class="hidden md:block bg-white shadow overflow-hidden sm:rounded-lg">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -48,26 +49,7 @@
                                         <div class="text-sm text-gray-900">{{ request.refund_amount }} FCFA</div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                        {% if request.reservation.status == 'refund_requested' %} 
-                                            bg-yellow-100 text-yellow-800
-                                        {% elif request.reservation.status == 'refund_accepted' %}
-                                            bg-green-100 text-green-800
-                                        {% elif request.reservation.status == 'refund_rejected' %}
-                                            bg-red-100 text-red-800
-                                        {% elif request.reservation.status == 'refunded' %}
-                                            bg-blue-100 text-blue-800
-                                        {% endif %}">
-                                            {% if request.reservation.status == 'refund_requested' %}
-                                                Remboursement demandé
-                                            {% elif request.reservation.status == 'refund_accepted' %}
-                                                Remboursement accepté
-                                            {% elif request.reservation.status == 'refund_rejected' %}
-                                                Remboursement refusé
-                                                {% elif request.reservation.status == 'refunded' %}
-                                                Remboursé
-                                            {% endif %}
-                                        </span>
+                                        {% include "remboursements/refund_status_badge.html" with status=request.reservation.status %}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{% url 'remboursements:refund_request_detail' pk=request.pk %}" 
@@ -83,8 +65,56 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Version mobile -->
+            <div class="md:hidden space-y-4">
+                {% for request in refund_requests %}
+                    <div class="bg-white shadow rounded-lg p-4">
+                        {% if user.is_staff %}
+                            <div class="mb-3">
+                                <div class="font-medium text-gray-900">{{ request.requester.get_full_name }}</div>
+                                <div class="text-sm text-gray-500">{{ request.requester.email }}</div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div>
+                                <div class="text-xs text-gray-500">Date de demande</div>
+                                <div class="text-sm font-medium">
+                                    {{ request.created_at|date:"d/m/Y" }}
+                                    <span class="text-gray-500">{{ request.created_at|date:"H:i" }}</span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="text-xs text-gray-500">Montant</div>
+                                <div class="text-sm font-medium">{{ request.refund_amount }} FCFA</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="text-xs text-gray-500">Professionnel</div>
+                            <div class="text-sm font-medium">{{ request.reservation.professionnel.full_name }}</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="text-xs text-gray-500 mb-1">Statut</div>
+                            {% include "remboursements/refund_status_badge.html" with status=request.reservation.status %}
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3 pt-2 border-t">
+                            <a href="{% url 'remboursements:refund_request_detail' pk=request.pk %}" 
+                               class="text-sm text-blue-600 hover:text-blue-900">Voir détails</a>
+                            {% if user.is_staff and request.reservation.status == 'refund_requested' %}
+                                <a href="{% url 'remboursements:process_refund' pk=request.pk reservation_pk=request.reservation.pk %}" 
+                                   class="text-sm text-indigo-600 hover:text-indigo-900">Traiter</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         {% else %}
-            <div class="bg-white shadow sm:rounded-lg">
+            <div class="bg-white shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
                     <div class="text-center">
                         <h3 class="text-lg leading-6 font-medium text-gray-900">Aucune demande de remboursement</h3>
@@ -102,34 +132,30 @@
 
         {% if is_paginated %}
             <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4">
-                <div class="flex-1 flex justify-between sm:hidden">
+                <div class="flex-1 flex justify-between">
                     {% if page_obj.has_previous %}
                         <a href="?page={{ page_obj.previous_page_number }}"
-                           class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                           class="relative inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 border">
                             Précédent
                         </a>
                     {% endif %}
+                    
+                    <p class="text-sm text-gray-700 hidden md:block">
+                        <span class="font-medium">{{ page_obj.start_index }}</span> à
+                        <span class="font-medium">{{ page_obj.end_index }}</span> sur
+                        <span class="font-medium">{{ paginator.count }}</span>
+                    </p>
+                    
                     {% if page_obj.has_next %}
                         <a href="?page={{ page_obj.next_page_number }}"
-                           class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                           class="relative inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 border">
                             Suivant
                         </a>
                     {% endif %}
-                </div>
-                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                    <div>
-                        <p class="text-sm text-gray-700">
-                            Affichage de <span class="font-medium">{{ page_obj.start_index }}</span> à
-                            <span class="font-medium">{{ page_obj.end_index }}</span> sur
-                            <span class="font-medium">{{ paginator.count }}</span> résultats
-                        </p>
-                    </div>
                 </div>
             </div>
         {% endif %}
     </div>
 </div>
-
-
 
 {% endblock %}
