@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'paiements',
     'avis',
     'portfolios',
+    'notifications',
 ]
 
 MIDDLEWARE = [

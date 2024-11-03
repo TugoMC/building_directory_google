@@ -14,6 +14,7 @@ urlpatterns = [
     path('', include('paiements.urls')),
     path('avis/', include('avis.urls', namespace='avis')),
     path('professionel/', include('portfolios.urls')),
+    path('notifications/', include('notifications.urls', namespace='notifications')),
     
     
     
