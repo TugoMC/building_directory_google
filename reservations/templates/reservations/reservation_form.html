@@ -1,18 +1,12 @@
 {% extends 'base.html' %}
+
+
+
 {% block title %}Réservez{% endblock %}
 {% block content %}
+{% load custom_filters %}
 
 <div class="container mx-auto px-4 py-8">
-    {% if messages %}
-    <div class="mb-4">
-        {% for message in messages %}
-        <div class="p-4 {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} rounded-lg">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
     <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
         <div class="p-8">
             <!-- En-tête du formulaire -->
@@ -24,7 +18,7 @@
             <form method="POST" class="space-y-8">
                 {% csrf_token %}
                 {{ form.selected_dates }}
-
+            
                 {% if form.non_field_errors %}
                 <div class="mb-4">
                     {% for error in form.non_field_errors %}
@@ -34,7 +28,7 @@
                     {% endfor %}
                 </div>
                 {% endif %}
-
+            
                 {% if form.selected_dates.errors %}
                 <div class="mb-4">
                     {% for error in form.selected_dates.errors %}
@@ -44,29 +38,29 @@
                     {% endfor %}
                 </div>
                 {% endif %}
-
+            
                 <!-- Section description -->
                 <div class="space-y-3">
                     <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700">
                         Description de votre projet
                     </label>
-                    <div class="relative">
-                        {{ form.description }}
+                    <div class="mt-2.5">
+                        {{ form.description|addclass:"block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" }}
                         <div id="descriptionError" class="text-red-500 text-sm mt-1"></div>
                     </div>
                 </div>
-
+            
                 <!-- Section téléphone -->
                 <div class="space-y-3">
                     <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700">
                         Numéro de téléphone
                     </label>
-                    <div class="relative">
-                        {{ form.phone }}
+                    <div class="mt-2.5">
+                        {{ form.phone|addclass:"block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" }}
                         <div id="phoneError" class="text-red-500 text-sm mt-1"></div>
                     </div>
                 </div>
-
+            
                 <!-- Calendrier - Ne pas modifier -->
                 <div id="calendar-container" class="bg-white p-6 rounded-lg shadow-md mt-6">
                     <div class="flex items-center justify-between mb-4">
@@ -88,7 +82,6 @@
                             </a>
                         </div>
                     </div>
-    
                     <div class="grid grid-cols-7 gap-1 mb-2">
                         {% for day in "LMMJVSD" %}
                         <div class="text-center text-gray-600 text-sm">
@@ -96,14 +89,14 @@
                         </div>
                         {% endfor %}
                     </div>
-    
+            
                     <div id="calendar-days" class="grid grid-cols-7 gap-1">
                         {% for empty in previous_month_days %}
                             <div class="text-center p-2 text-gray-400">
                                 {{ empty }}
                             </div>
                         {% endfor %}
-                    
+                        
                         {% for day in days %}
                             <div class="text-center p-2 relative day-cell transition-colors duration-200
                                 {% if day == current_day %}bg-blue-100{% endif %}
@@ -116,36 +109,35 @@
                                 {% endif %}
                             </div>
                         {% endfor %}
-    
                     </div>
-                    
+            
                     <div class="mt-4 flex items-center justify-start space-x-4 text-sm">
                         <div class="flex items-center">
                             <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
                             <span class="text-gray-600">Disponible</span>
                         </div>
-                    
+            
                         <div class="flex items-center">
                             <span class="w-3 h-3 bg-blue-100 rounded-full mr-2"></span>
                             <span class="text-gray-600">Aujourd'hui</span>
                         </div>
-                    
+            
                         <div class="flex items-center">
                             <span class="w-3 h-3 bg-red-100 rounded-full mr-2"></span>
                             <span class="text-gray-600">Déjà réservé</span>
                         </div>
                     </div>
-                    
+            
                     <div class="text-red-500 text-sm mt-2" id="datesError"></div>
                 </div>
-
+            
                 <!-- Dates sélectionnées -->
                 <div class="mt-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-3">Dates sélectionnées :</h3>
                     <div id="selectedDates" class="min-h-[50px] p-4 bg-gray-50 rounded-lg flex flex-wrap gap-2">
                     </div>
                 </div>
-
+            
                 <!-- Bouton de soumission -->
                 <div class="mt-8">
                     <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 w-full justify-center">
@@ -156,6 +148,7 @@
                     </button>
                 </div>
             </form>
+            
         </div>
     </div>
 </div>

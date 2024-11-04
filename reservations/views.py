@@ -1,7 +1,8 @@
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Reservation, Professionnel, ReservationStatus
+from .models import Reservation, Professionnel, ReservationStatus, check_profile_completion
 from .forms import ReservationForm
 from datetime import datetime, date, timedelta
 import calendar
@@ -15,6 +16,27 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def reservation_create(request, professionnel_id):
+    
+    profile = request.user.profile
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        if not check_profile_completion(profile):
+            missing_info = []
+            if not profile.first_name:
+                missing_info.append("Prénom")
+            if not profile.last_name:
+                missing_info.append("Nom")
+            if not profile.city:
+                missing_info.append("Ville")
+                
+            return JsonResponse({
+                'error': 'Profile incomplete',
+                'missing_info': missing_info
+            }, status=400)
+        return JsonResponse({'success': True})
+
+
+
+   
     professionnel = get_object_or_404(Professionnel, id=professionnel_id)
     
     # Obtenir l'année et le mois depuis l'URL ou utiliser la date actuelle
@@ -138,16 +160,6 @@ def reservation_success(request):
 
 
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .filters import ReservationFilterForm
-from .services import ReservationService
-from .constants import MSG_NO_RESERVATIONS, MSG_FILTER_NO_RESULTS
-import logging
-
-logger = logging.getLogger(__name__)
-
 @login_required
 def reservation_list(request):
     logger.debug("Starting reservation_list view")
@@ -203,3 +215,4 @@ def reservation_delete(request, reservation_id):
     return render(request, 'reservations/reservation_delete.html', {
         'reservation': reservation
     })
+    

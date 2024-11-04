@@ -12,56 +12,75 @@
       <!-- Sidebar filtres -->
       <div class="w-full lg:w-64 bg-white rounded-lg p-4 h-auto">
         <div class="mb-4">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">Filtres</h2>
-          
-          <div class="space-y-4">
-            <!-- Recherche -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Rechercher</label>
-              <div class="mt-1 relative rounded-md shadow-sm">
-                <input type="text" class="block w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-              </div>
-            </div>
-
-            <!-- Ville -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Ville</label>
-              <select class="mt-1 block w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                <option>Toutes les villes</option>
-                {% for city_code, city_name in cities %}
-                  <option value="{{ city_code }}">{{ city_name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <!-- Spécialisation -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Spécialisation</label>
-              <select class="mt-1 block w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                <option>Toutes les spécialisations</option>
-                {% for spec_code, spec_name in specializations %}
-                  <option value="{{ spec_code }}">{{ spec_name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <!-- Niveau -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Niveau</label>
-              <select class="mt-1 block w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                <option>Tous les niveaux</option>
-                {% for level_code, level_name in skill_levels %}
-                  <option value="{{ level_code }}">{{ level_name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <button class="w-full bg-indigo-600 text-white rounded-md px-4 py-2 hover:bg-indigo-700 transition-colors">
-              Appliquer les filtres
-            </button>
-          </div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Filtres</h2>
+            
+            <form id="filterForm" class="space-y-4">
+                <!-- Recherche -->
+                <div>
+                    <label for="search" class="block text-sm font-medium text-gray-700">Rechercher</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <input 
+                            type="text" 
+                            id="search"
+                            name="search"
+                            class="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        >
+                    </div>
+                </div>
+                <!-- Ville -->
+                <div>
+                    <label for="city" class="block text-sm font-medium text-gray-700">Ville</label>
+                    <select 
+                        id="city"
+                        name="city"
+                        class="mt-1 block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    >
+                        <option value="">Toutes les villes</option>
+                        {% for city_code, city_name in cities %}
+                            <option value="{{ city_code }}">{{ city_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- Spécialisation -->
+                <div>
+                    <label for="specialization" class="block text-sm font-medium text-gray-700">Spécialisation</label>
+                    <select 
+                        id="specialization"
+                        name="specialization"
+                        class="mt-1 block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    >
+                        <option value="">Toutes les spécialisations</option>
+                        {% for spec_code, spec_name in specializations %}
+                            <option value="{{ spec_code }}">{{ spec_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- Niveau -->
+                <div>
+                    <label for="skill_level" class="block text-sm font-medium text-gray-700">Niveau</label>
+                    <select 
+                        id="skill_level"
+                        name="skill_level"
+                        class="mt-1 block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    >
+                        <option value="">Tous les niveaux</option>
+                        {% for level_code, level_name in skill_levels %}
+                            <option value="{{ level_code }}">{{ level_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button 
+                    type="submit"
+                    class="w-full bg-indigo-600 text-white rounded-md px-4 py-2 hover:bg-indigo-700 transition-colors"
+                >
+                    Appliquer les filtres
+                </button>
+            </form>
         </div>
-      </div>
+    </div>
+    
+      
+      
 
       <!-- Liste des professionnels -->
       <div class="flex-1">
@@ -217,11 +236,49 @@
 
 {% block extra_js %}
 <script>
-    document.getElementById('search').addEventListener('input', function() {
-        clearTimeout(this.searchTimeout);
-        this.searchTimeout = setTimeout(() => {
-            document.getElementById('filter-form').submit();
-        }, 500); // délai de 500 ms pour éviter de déclencher le filtre trop souvent
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('filterForm');
+    
+    // Récupérer les paramètres d'URL actuels
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Pré-remplir les champs du formulaire avec les valeurs de l'URL
+    document.getElementById('search').value = urlParams.get('search') || '';
+    document.getElementById('city').value = urlParams.get('city') || '';
+    document.getElementById('specialization').value = urlParams.get('specialization') || '';
+    document.getElementById('skill_level').value = urlParams.get('skill_level') || '';
+    
+    // Gestionnaire de soumission du formulaire
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Créer un nouvel objet URLSearchParams
+      const params = new URLSearchParams();
+      
+      // Ajouter les valeurs des champs si elles ne sont pas vides
+      const search = document.getElementById('search').value;
+      const city = document.getElementById('city').value;
+      const specialization = document.getElementById('specialization').value;
+      const skill_level = document.getElementById('skill_level').value;
+      
+      if (search) params.append('search', search);
+      if (city) params.append('city', city);
+      if (specialization) params.append('specialization', specialization);
+      if (skill_level) params.append('skill_level', skill_level);
+      
+      // Rediriger vers la même page avec les nouveaux paramètres
+      window.location.href = `${window.location.pathname}?${params.toString()}`;
     });
-</script>
+  
+    // Ajouter un gestionnaire pour la recherche en temps réel
+    let searchTimeout;
+    document.getElementById('search').addEventListener('input', function(e) {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        form.dispatchEvent(new Event('submit'));
+      }, 500);
+    });
+  });
+  </script>
+  
 {% endblock %}

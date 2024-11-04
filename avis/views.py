@@ -64,7 +64,7 @@ def avis_edit(request, avis_id):
         if form.is_valid():
             form.save()
             messages.success(request, "Votre avis a été modifié avec succès.")
-            return redirect('avis_list')
+            return redirect('avis:avis_list')
     else:
         form = AvisForm(instance=avis)
     
@@ -81,7 +81,7 @@ def avis_delete(request, avis_id):
     if request.method == "POST":
         avis.delete()
         messages.success(request, "Votre avis a été supprimé avec succès.")
-        return redirect('avis_list')
+        return redirect('avis:avis_list')
         
     return render(request, 'avis/avis_delete.html', {
         'avis': avis

@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="bg-white shadow rounded-lg">
-    <div class="px-4 py-2 border-b bg-red-500 text-white">
-        <h2 class="font-bold mb-0">Supprimer votre avis</h2>
+<div class="max-w-md mx-auto bg-white shadow-md rounded-lg mt-32 mb-32">
+    <div class="px-6 py-4 border-b bg-red-500 text-white rounded-t-lg">
+        <h2 class="text-lg font-semibold">Supprimer votre avis</h2>
     </div>
-    <div class="p-4">
-        <p>Êtes-vous sûr de vouloir supprimer votre avis ? Cette action est irréversible.</p>
-        <div class="flex justify-between items-center mt-4">
-            <a href="{% url 'avis:avis_list' %}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+    <div class="p-6">
+        <p class="text-gray-700">Êtes-vous sûr de vouloir supprimer votre avis ? Cette action est irréversible.</p>
+        <div class="flex justify-between items-center mt-6">
+            <a href="{% url 'avis:avis_list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-100 shadow-sm">
                 <i class="bi bi-arrow-left"></i> Retour
             </a>
             <form method="post">
                 {% csrf_token %}
-                <button type="submit" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700">
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 shadow-sm">
                     <i class="bi bi-trash"></i> Supprimer
                 </button>
             </form>

@@ -58,3 +58,4 @@ def create_profile_on_signup(request, user, **kwargs):
 @receiver(social_account_added)
 def create_profile_on_social_added(request, sociallogin, **kwargs):
     Profile.objects.get_or_create(user=sociallogin.user)
+

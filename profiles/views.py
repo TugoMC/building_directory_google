@@ -4,9 +4,14 @@ from datetime import datetime
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.urls import reverse
 from .forms import ProfileForm
 from .models import Profile
 from reservations.models import Reservation, ReservationStatus
+
+# views.py
+from django.contrib.messages import get_messages
+from django.urls import reverse
 
 @login_required
 def profile_view(request):
@@ -14,10 +19,11 @@ def profile_view(request):
     
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
+        
         if form.is_valid():
             form.save()
-            messages.success(request, 'Votre profil a été mis à jour avec succès!')
-            return redirect('profiles:profile')
+            messages.success(request, 'Votre profil a été mis à jour avec succès!', extra_tags='profile_update')
+            return redirect(reverse('profiles:profile'))
     else:
         form = ProfileForm(instance=profile)
 
@@ -30,7 +36,6 @@ def profile_view(request):
     for reservation in completed_reservations:
         if isinstance(reservation.selected_dates, str):
             try:
-                # Conversion des dates string en objets datetime
                 dates_list = json.loads(reservation.selected_dates)
                 formatted_dates = []
                 for date_str in dates_list:

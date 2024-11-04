@@ -258,3 +258,13 @@ class Reservation(models.Model):
         conflicting_dates = sorted(set(conflicting_dates))
         
         return (len(conflicting_dates) == 0, conflicting_dates)
+    
+def check_profile_completion(profile):
+        """
+        Vérifie si les informations essentielles du profil sont complètes.
+        """
+        return bool(
+            profile.first_name and
+            profile.last_name and
+            profile.city
+        )

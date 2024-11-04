@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}{{ professionnel.full_name }} - Détails{% endblock %}
+{% block title %}{{ professionnel.full_name }}{% endblock %}
 {% block content %}
 
 <div class="min-h-screen bg-gray-50">
@@ -21,16 +21,53 @@
                     </svg>
                     Retour à la liste
                 </a>
-                <a href="{% url 'reservation_create' professionnel.id %}" 
-                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                <button id="reserve-button" data-professional-id="{{ professionnel.id }}" 
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
                     <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     Réserver
-                </a>
+                </button>
+                <!-- Modal -->
+                <!-- Modal -->
+<div id="reservation-modal" class="fixed z-10 inset-0 overflow-y-auto hidden">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+  
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+  
+      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="sm:flex sm:items-start">
+            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+              <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+              <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Informations de profil incomplètes</h3>
+              <div class="mt-2">
+                <p class="text-sm text-gray-500">
+                  Vos informations de profil sont incomplètes. Veuillez renseigner vos informations avant de pouvoir réserver.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <a href="{% url 'profiles:profile' %}" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm" id="go-to-profile-button">
+            Renseigner mes informations
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+                
+                
             </div>
         </div>
     </header>
+   
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
@@ -83,23 +120,24 @@
 
             <!-- Right Column -->
             <div class="col-span-12 lg:col-span-8 space-y-6">
-                <!-- Video Section -->
-                <div class="bg-white rounded-lg shadow p-6 space-y-4">
-                    <div class="flex items-center space-x-2">
-                        <!-- Font Awesome Video Icon -->
-                        <i class="fas fa-video text-gray-800 text-xl"></i>
-                        <h2 class="text-xl font-semibold text-gray-800">Vidéo de présentation</h2>
-                    </div>
-                    
-                    {% if professionnel.presentation_video %}
-                    <div class="video-container">
-                        <video class="w-full rounded-lg border border-gray-300 p-2" controls>
-                            <source src="{{ professionnel.presentation_video.url }}" type="video/mp4">
-                            Votre navigateur ne supporte pas la lecture de vidéos.
-                        </video>
-                    </div>
-                    {% endif %}
+                {% if professionnel.presentation_video %}
+            <!-- Video Section -->
+            <div class="bg-white rounded-lg shadow p-6 space-y-4">
+                <div class="flex items-center space-x-2">
+                    <!-- Font Awesome Video Icon -->
+                    <i class="fas fa-video text-gray-800 text-xl"></i>
+                    <h2 class="text-xl font-semibold text-gray-800">Vidéo de présentation</h2>
                 </div>
+                
+                <div class="video-container">
+                    <video class="w-full rounded-lg border border-gray-300 p-2" controls>
+                        <source src="{{ professionnel.presentation_video.url }}" type="video/mp4">
+                        Votre navigateur ne supporte pas la lecture de vidéos.
+                    </video>
+                </div>
+            </div>
+            {% endif %}
+
 
 
                 <!-- Portfolio Grid -->
@@ -121,7 +159,9 @@
                                     <div class="p-4 flex flex-col flex-grow">
                                         <div class="flex-grow">
                                             <h3 class="text-lg font-medium text-gray-900 mb-2">{{ portfolio.title }}</h3>
-                                            <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ portfolio.description }}</p>
+                                            <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ portfolio.description|slice:":10" }}</p>
+                                            
+                                            
                                         </div>
                                         
                                         <div class="mt-auto flex justify-between items-center">
@@ -244,7 +284,7 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        <p class="text-sm text-gray-500">Aucune réservation terminée.</p>
+                        <p class="text-sm text-gray-500">Soyez le premier à donner un avis.</p>
                     {% endif %}
                 </div>
 
@@ -255,7 +295,9 @@
 
 
 
+  
 
+  
             
             <script>
                 class CalendarManager {
@@ -456,11 +498,52 @@
             </script>
 
 
+            <script>
+                // Get the modal
+var modal = document.getElementById("reservation-modal");
 
+// Get the button that opens the modal
+var btn = document.getElementById("reserve-button");
 
-        
+// Get the button that redirects to the profile page
+var goToProfileBtn = document.getElementById("go-to-profile-button");
 
+// When the user clicks the button, check if the profile is complete
+btn.addEventListener("click", function() {
+  // Appel AJAX pour vérifier si le profil est complet
+  fetch("{% url 'reservation_create' professionnel.id %}", {
+    method: "GET",
+    headers: {
+      "X-Requested-With": "XMLHttpRequest"
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.error) {
+      // Afficher le modal
+      modal.style.display = "block";
+    } else {
+      // Rediriger vers la page de création de réservation
+      window.location.href = "{% url 'reservation_create' professionnel.id %}";
+    }
+  })
+  .catch(error => {
+    console.error("Error checking profile completion:", error);
+  });
+});
 
+// When the user clicks on the "Renseigner mes informations" button, go to the profile update page
+goToProfileBtn.addEventListener("click", function() {
+  window.location.href = "{% url 'profiles:profile' %}";
+});
 
-
+// When the user clicks anywhere outside of the modal, close it
+window.addEventListener("click", function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+});
+            </script>
+            
+            
 {% endblock %}

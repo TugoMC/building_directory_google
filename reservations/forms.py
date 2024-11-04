@@ -21,7 +21,7 @@ class ReservationForm(forms.ModelForm):
             }),
             'phone': forms.TextInput(attrs={
                 'class': 'w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none',
-                'placeholder': 'Votre numéro de téléphone'
+                'placeholder': 'XX XX XX XX XX'
             })
         }
 
