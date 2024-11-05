@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="{% url 'dashboard:home' %}" class="text-xl font-bold">Dashboard</a>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                        <a href="{% url 'dashboard:professional_list' %}" class="px-3 py-2 text-gray-700 hover:text-gray-900">Professionnels</a>
+                        <a href="{% url 'dashboard:profile_list' %}" class="px-3 py-2 text-gray-700 hover:text-gray-900">Profils</a>
+                        <a href="{% url 'dashboard:reservation_list' %}" class="px-3 py-2 text-gray-700 hover:text-gray-900">Réservations</a>
+                        <a href="{% url 'dashboard:portfolio_list' %}" class="px-3 py-2 text-gray-700 hover:text-gray-900">Portfolios</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="max-w-7xl mx-auto px-4 mt-4">
+        {% for message in messages %}
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

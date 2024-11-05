@@ -1,0 +1,31 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}
+{% if professional %}Modifier{% else %}Nouveau{% endif %} Professionnel
+{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg p-6">
+    <h1 class="text-2xl font-bold mb-6">
+        {% if professional %}Modifier{% else %}Nouveau{% endif %} Professionnel
+    </h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ field.id_for_label }}">
+                {{ field.label }}
+            </label>
+            {{ field.errors }}
+            {{ field }}
+        </div>
+        {% endfor %}
+        <div class="flex justify-end mt-6">
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                Enregistrer
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

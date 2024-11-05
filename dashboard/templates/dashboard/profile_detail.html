@@ -1,0 +1,69 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold">Détails du Profil</h1>
+                <div class="flex gap-2">
+                    <a href="{% url 'dashboard:profile_edit' user.pk %}" 
+                       class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+                        Modifier
+                    </a>
+                    <a href="{% url 'dashboard:profile_delete' user.pk %}" 
+                       class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
+                        Supprimer
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informations de base -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Nom d'utilisateur</h3>
+                        <p class="mt-1">{{ user.username }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Email</h3>
+                        <p class="mt-1">{{ user.email }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Nom complet</h3>
+                        <p class="mt-1">{{ profile.first_name }} {{ profile.last_name }}</p>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Profession</h3>
+                        <p class="mt-1">{{ profile.get_profession_display|default:"Non spécifié" }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Ville</h3>
+                        <p class="mt-1">{{ profile.get_city_display|default:"Non spécifié" }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Commune</h3>
+                        <p class="mt-1">{{ profile.get_commune_display|default:"Non spécifié" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {% if profile.profile_image %}
+            <div class="mt-6">
+                <h3 class="text-sm font-medium text-gray-500 mb-2">Photo de profil</h3>
+                <img src="{{ profile.profile_image.url }}" alt="Photo de profil" 
+                     class="w-32 h-32 object-cover rounded-full">
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-6">
+        <a href="{% url 'dashboard:profile_list' %}" 
+           class="text-blue-500 hover:text-blue-700">
+            ← Retour à la liste des profils
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Liste des Professionnels</h1>
+        <a href="{% url 'dashboard:professional_create' %}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Ajouter un professionnel
+        </a>
+    </div>
+
+    <div class="mb-6">
+        <form method="get" class="flex gap-4">
+            <input type="text" name="search" value="{{ search_query }}" 
+                   class="border rounded px-4 py-2 w-full" 
+                   placeholder="Rechercher un professionnel...">
+            <button type="submit" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                Rechercher
+            </button>
+        </form>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <table class="min-w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left">Nom</th>
+                    <th class="px-6 py-3 text-left">Spécialisation</th>
+                    <th class="px-6 py-3 text-left">Ville</th>
+                    <th class="px-6 py-3 text-left">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for professional in professionals %}
+                <tr>
+                    <td class="px-6 py-4">{{ professional.full_name }}</td>
+                    <td class="px-6 py-4">{{ professional.specialization }}</td>
+                    <td class="px-6 py-4">{{ professional.city }}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex gap-2">
+                            <a href="{% url 'dashboard:professional_detail' professional.pk %}" 
+                               class="text-blue-500 hover:text-blue-700">Voir</a>
+                            <a href="{% url 'dashboard:professional_edit' professional.pk %}" 
+                               class="text-yellow-500 hover:text-yellow-700">Modifier</a>
+                            <a href="{% url 'dashboard:professional_delete' professional.pk %}" 
+                               class="text-red-500 hover:text-red-700">Supprimer</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if professionals.has_other_pages %}
+    <div class="flex justify-center mt-6">
+        <div class="flex gap-2">
+            {% if professionals.has_previous %}
+                <a href="?page={{ professionals.previous_page_number }}&search={{ search_query }}" 
+                   class="px-3 py-1 border rounded hover:bg-gray-100">Précédent</a>
+            {% endif %}
+
+            {% for num in professionals.paginator.page_range %}
+                {% if professionals.number == num %}
+                    <span class="px-3 py-1 border rounded bg-blue-500 text-white">{{ num }}</span>
+                {% else %}
+                    <a href="?page={{ num }}&search={{ search_query }}" 
+                       class="px-3 py-1 border rounded hover:bg-gray-100">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if professionals.has_next %}
+                <a href="?page={{ professionals.next_page_number }}&search={{ search_query }}" 
+                   class="px-3 py-1 border rounded hover:bg-gray-100">Suivant</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

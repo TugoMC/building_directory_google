@@ -1,0 +1,32 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="max-w-md mx-auto bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="px-6 py-4">
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">Confirmer la suppression</h1>
+            
+            <p class="text-gray-600 mb-6">
+                Êtes-vous sûr de vouloir supprimer le profil de 
+                <strong>{{ profile.get_full_name|default:profile.username }}</strong> ?
+                Cette action est irréversible.
+            </p>
+
+            <div class="border-t pt-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="flex justify-end space-x-2">
+                        <a href="{% url 'dashboard:profile_list' %}" 
+                           class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                            Annuler
+                        </a>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">
+                            Confirmer la suppression
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

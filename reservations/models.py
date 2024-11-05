@@ -6,6 +6,7 @@ from django.utils import timezone
 from professionnels.models import Professionnel
 from django.core.exceptions import ValidationError
 from reservations.managers import ReservationManager
+from django.db import transaction
 
 class ReservationStatus(models.TextChoices):
     PENDING = 'pending', 'En attente de confirmation'
@@ -94,14 +95,7 @@ class Reservation(models.Model):
                     'status': f'Transition invalide de {old_status} vers {self.status}'
                 })
 
-    def save(self, *args, **kwargs):
-        # Si le statut a changé, mettre à jour last_status_change
-        if self.pk:
-            old_instance = Reservation.objects.get(pk=self.pk)
-            if old_instance.status != self.status:
-                self.last_status_change = timezone.now()
-        super().save(*args, **kwargs)
-
+    
     def _is_valid_status_transition(self, old_status, new_status):
         """Vérifie si la transition d'état est valide."""
         valid_transitions = {
@@ -211,14 +205,27 @@ class Reservation(models.Model):
         return self.professionnel.daily_rate * number_of_days
 
     def save(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  # Extraire l'utilisateur des kwargs
+        
         # Calculer le prix total
         self.total_price = self.calculate_total_price()
         
-        # Code existant pour la mise à jour du statut
+        # Gérer l'historique des statuts
         if self.pk:
             old_instance = Reservation.objects.get(pk=self.pk)
             if old_instance.status != self.status:
                 self.last_status_change = timezone.now()
+                # Créer l'entrée dans l'historique après la sauvegarde
+                def create_history():
+                    ReservationStatusHistory.objects.create(
+                        reservation=self,
+                        old_status=old_instance.status,
+                        new_status=self.status,
+                        changed_at=timezone.now(),
+                        changed_by=user
+                    )
+                transaction.on_commit(create_history)
+        
         super().save(*args, **kwargs)
         
         
@@ -268,3 +275,35 @@ def check_profile_completion(profile):
             profile.last_name and
             profile.city
         )
+
+
+class ReservationStatusHistory(models.Model):
+    reservation = models.ForeignKey(
+        'Reservation',
+        on_delete=models.CASCADE,
+        related_name='status_history'
+    )
+    old_status = models.CharField(
+        max_length=20,
+        choices=ReservationStatus.choices,
+        verbose_name="Ancien statut"
+    )
+    new_status = models.CharField(
+        max_length=20,
+        choices=ReservationStatus.choices,
+        verbose_name="Nouveau statut"
+    )
+    changed_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Date du changement"
+    )
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Modifié par"
+    )
+
+    class Meta:
+        ordering = ['-changed_at']

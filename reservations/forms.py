@@ -1,6 +1,6 @@
 # reservation/forms.py
 from django import forms
-from .models import Reservation
+from .models import Reservation, ReservationStatus
 from datetime import date, datetime
 import json
 
@@ -78,3 +78,27 @@ class ReservationAdminForm(forms.ModelForm):
                     f'Transition invalide de {old_status} vers {new_status}'
                 )
         return cleaned_data
+    
+    
+
+class StatusUpdateForm(forms.Form):
+    status = forms.ChoiceField(
+        choices=ReservationStatus.choices,
+        widget=forms.Select(attrs={
+            'class': 'form-select rounded-md border-gray-300'
+        })
+    )
+
+    def __init__(self, *args, reservation=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.reservation = reservation
+
+    def clean_status(self):
+        new_status = self.cleaned_data['status']
+        if self.reservation:
+            old_status = self.reservation.status
+            if not self.reservation._is_valid_status_transition(old_status, new_status):
+                raise forms.ValidationError(
+                    f'Transition invalide de {old_status} vers {new_status}'
+                )
+        return new_status

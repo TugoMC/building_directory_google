@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'avis',
     'portfolios',
     'notifications',
+    'dashboard',
 ]
 
 MIDDLEWARE = [
