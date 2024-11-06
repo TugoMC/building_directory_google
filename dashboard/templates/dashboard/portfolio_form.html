@@ -71,109 +71,100 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const dropZone = document.getElementById('drop-zone');
-    const imageInput = document.getElementById('image-input');
-    const previewContainer = document.getElementById('preview-container');
-    const form = document.getElementById('portfolio-form');
-
-    // Gestion du drag & drop
-    dropZone.addEventListener('click', () => imageInput.click());
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropZone = document.getElementById('drop-zone');
+        const imageInput = document.getElementById('image-input');
+        const previewContainer = document.getElementById('preview-container');
+        const form = document.getElementById('portfolio-form');
+        const uploadedFiles = new Set(); // Stocke les noms des fichiers pour éviter les doublons
     
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('border-blue-500');
-    });
-
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('border-blue-500');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('border-blue-500');
-        handleFiles(e.dataTransfer.files);
-    });
-
-    imageInput.addEventListener('change', (e) => {
-        handleFiles(e.target.files);
-    });
-
-    function handleFiles(files) {
-        Array.from(files).forEach(file => {
-            if (!file.type.startsWith('image/')) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const previewDiv = document.createElement('div');
-                previewDiv.className = 'relative group';
-                previewDiv.innerHTML = `
-                    <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg">
-                    <button type="button" class="delete-preview absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                `;
-                previewContainer.appendChild(previewDiv);
-
-                // Ajouter le fichier à un FormData pour la soumission
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                const newInput = document.createElement('input');
-                newInput.type = 'file';
-                newInput.name = 'images';
-                newInput.className = 'hidden';
-                newInput.files = dataTransfer.files;
-                previewDiv.appendChild(newInput);
-            };
-            reader.readAsDataURL(file);
+        // Gestion du drag & drop
+        dropZone.addEventListener('click', () => imageInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-blue-500');
         });
-    }
-
-    // Suppression des images
-    previewContainer.addEventListener('click', (e) => {
-        if (e.target.closest('.delete-image')) {
-            const imageId = e.target.closest('.delete-image').dataset.imageId;
-            fetch(`/dashboard/portfolio/image/${imageId}/delete/`, {
+    
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-blue-500');
+        });
+    
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-blue-500');
+            handleFiles(e.dataTransfer.files);
+        });
+    
+        imageInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+    
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                // Vérifier si le fichier est déjà ajouté
+                if (!file.type.startsWith('image/') || uploadedFiles.has(file.name)) return;
+    
+                // Ajouter le nom du fichier au Set pour éviter les duplications
+                uploadedFiles.add(file.name);
+    
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = 'relative group';
+                    previewDiv.innerHTML = `
+                        <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg">
+                        <button type="button" class="delete-preview absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    `;
+                    previewContainer.appendChild(previewDiv);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    
+        // Suppression des images
+        previewContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.delete-image')) {
+                const imageId = e.target.closest('.delete-image').dataset.imageId;
+                fetch(`/dashboard/portfolio/image/${imageId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        e.target.closest('[data-image-id]').remove();
+                    }
+                });
+            } else if (e.target.closest('.delete-preview')) {
+                const previewDiv = e.target.closest('.relative');
+                const fileName = previewDiv.querySelector('img').src.split('/').pop();
+                uploadedFiles.delete(fileName); // Supprimer du Set
+                previewDiv.remove();
+            }
+        });
+    
+        // Soumission du formulaire
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+    
+            fetch(form.action, {
                 method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
+                body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    e.target.closest('[data-image-id]').remove();
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = "{% url 'dashboard:portfolio_list' %}";
                 }
             });
-        } else if (e.target.closest('.delete-preview')) {
-            e.target.closest('.relative').remove();
-        }
-    });
-
-    // Soumission du formulaire
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        
-        // Ajouter toutes les images au FormData
-        document.querySelectorAll('input[type="file"][name="images"]').forEach(input => {
-            if (input.files.length > 0) {
-                formData.append('images', input.files[0]);
-            }
-        });
-
-        fetch(form.action, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (response.ok) {
-                window.location.href = "{% url 'dashboard:portfolio_list' %}";
-            }
         });
     });
-});
 </script>
 {% endblock %}

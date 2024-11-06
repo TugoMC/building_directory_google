@@ -337,20 +337,25 @@ def portfolio_list(request):
         'selected_professionnel_id': professionnel_id,  # ID du professionnel sélectionné
     })
 
-
 @staff_member_required
 def portfolio_create(request):
     if request.method == 'POST':
         form = PortfolioForm(request.POST)
         if form.is_valid():
             portfolio = form.save()
-            # Gestion des images
-            for img in request.FILES.getlist('images'):
-                PortfolioImage.objects.create(
-                    portfolio=portfolio,
-                    image=img,
-                    order=PortfolioImage.objects.filter(portfolio=portfolio).count()
-                )
+            
+            # Récupérer les images uniques
+            unique_images = set(request.FILES.getlist('images'))
+            
+            for img in unique_images:
+                # Vérifiez si l'image existe déjà pour ce portfolio
+                if not PortfolioImage.objects.filter(portfolio=portfolio, image=img).exists():
+                    PortfolioImage.objects.create(
+                        portfolio=portfolio,
+                        image=img,
+                        order=portfolio.images.count()
+                    )
+            
             messages.success(request, 'Portfolio créé avec succès.')
             return JsonResponse({'success': True})
         return JsonResponse({'success': False, 'errors': form.errors}, status=400)
@@ -369,13 +374,18 @@ def portfolio_edit(request, pk):
         form = PortfolioForm(request.POST, instance=portfolio)
         if form.is_valid():
             portfolio = form.save()
-            # Gestion des nouvelles images
-            for img in request.FILES.getlist('images'):
-                PortfolioImage.objects.create(
-                    portfolio=portfolio,
-                    image=img,
-                    order=portfolio.images.count()
-                )
+            
+            # Récupérer les images uniques
+            unique_images = set(request.FILES.getlist('images'))
+            
+            for img in unique_images:
+                if not PortfolioImage.objects.filter(portfolio=portfolio, image=img).exists():
+                    PortfolioImage.objects.create(
+                        portfolio=portfolio,
+                        image=img,
+                        order=portfolio.images.count()
+                    )
+            
             messages.success(request, 'Portfolio mis à jour avec succès.')
             return JsonResponse({'success': True})
         return JsonResponse({'success': False, 'errors': form.errors}, status=400)
@@ -388,7 +398,8 @@ def portfolio_edit(request, pk):
         'images': portfolio.images.all().order_by('order'),
         'is_creation': False
     })
-    
+
+
 @staff_member_required
 def portfolio_delete(request, pk):
     portfolio = get_object_or_404(Portfolio, pk=pk)
@@ -446,7 +457,25 @@ def portfolio_image_reorder(request, portfolio_id):
 @staff_member_required
 @require_POST
 def portfolio_image_delete(request, image_id):
-    image = get_object_or_404(PortfolioImage, id=image_id)
-    image.delete()
-    return JsonResponse({'success': True})  # Toujours renvoyer un JSON pour que le front puisse traiter la réponse
-  
+    try:
+        image = get_object_or_404(PortfolioImage, id=image_id)
+        portfolio = image.portfolio
+        image_id = image.id
+        image.delete()
+        return JsonResponse({
+            'success': True,
+            'message': 'Image supprimée avec succès',
+            'image_id': image_id,
+            'portfolio_id': portfolio.id
+        })
+    except PortfolioImage.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'L\'image n\'existe pas'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)
+        
