@@ -303,7 +303,6 @@ def reservation_status_update(request, pk):
 
 
 # Vues pour les Portfolios
-# views.py
 @staff_member_required
 def portfolio_list(request):
     search_query = request.GET.get('search', '')

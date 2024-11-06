@@ -1,11 +1,11 @@
 {% extends "dashboard/base.html" %}
-
+{% load widget_tweaks %}
 {% block title %}
 {% if professional %}Modifier{% else %}Nouveau{% endif %} Professionnel
 {% endblock %}
 
 {% block content %}
-<div class="bg-white shadow rounded-lg p-6">
+<div class="bg-white shadow-lg rounded-lg p-6">
     <h1 class="text-2xl font-bold mb-6">
         {% if professional %}Modifier{% else %}Nouveau{% endif %} Professionnel
     </h1>
@@ -18,11 +18,11 @@
                 {{ field.label }}
             </label>
             {{ field.errors }}
-            {{ field }}
+            {{ field|add_class:"input input-bordered w-full" }}
         </div>
         {% endfor %}
         <div class="flex justify-end mt-6">
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            <button type="submit" class="btn btn-primary">
                 Enregistrer
             </button>
         </div>

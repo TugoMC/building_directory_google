@@ -1,8 +1,8 @@
 {% extends "dashboard/base.html" %}
 {% block content %}
 
-<div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <div class="bg-white rounded-lg shadow-md p-6">
+<div class="max-w-lg mx-auto mt-20">
+  <div>
     <h1 class="text-2xl font-semibold text-gray-900 mb-6">Supprimer Portfolio</h1>
 
     <p class="text-gray-600 mb-6">Êtes-vous sûr de vouloir supprimer le portfolio "{{ portfolio.title }}" ? Cette action est irréversible.</p>
@@ -11,11 +11,11 @@
       {% csrf_token %}
       <div class="flex justify-end space-x-4 mt-8">
         <a href="{% url 'dashboard:portfolio_list' %}" 
-           class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+           class="btn btn-outline">
           Annuler
         </a>
         <button type="submit"
-                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                class="btn btn-error">
           Confirmer la suppression
         </button>
       </div>

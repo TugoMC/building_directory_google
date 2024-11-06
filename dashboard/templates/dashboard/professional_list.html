@@ -5,7 +5,7 @@
 <div class="container mx-auto px-4 py-6">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Liste des Professionnels</h1>
-        <a href="{% url 'dashboard:professional_create' %}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        <a href="{% url 'dashboard:professional_create' %}" class="btn btn-primary">
             Ajouter un professionnel
         </a>
     </div>
@@ -13,17 +13,17 @@
     <div class="mb-6">
         <form method="get" class="flex gap-4">
             <input type="text" name="search" value="{{ search_query }}" 
-                   class="border rounded px-4 py-2 w-full" 
+                   class="input input-bordered w-full" 
                    placeholder="Rechercher un professionnel...">
-            <button type="submit" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+            <button type="submit" class="btn btn-secondary">
                 Rechercher
             </button>
         </form>
     </div>
 
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+    <div class="bg-white shadow-md rounded-lg overflow-hidden mt-20">
         <table class="min-w-full">
-            <thead class="bg-gray-50">
+            <thead class="bg-base-100">
                 <tr>
                     <th class="px-6 py-3 text-left">Nom</th>
                     <th class="px-6 py-3 text-left">Spécialisation</th>
@@ -31,7 +31,7 @@
                     <th class="px-6 py-3 text-left">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
+            <tbody class="divide-y divide-base-200">
                 {% for professional in professionals %}
                 <tr>
                     <td class="px-6 py-4">{{ professional.full_name }}</td>
@@ -58,21 +58,21 @@
         <div class="flex gap-2">
             {% if professionals.has_previous %}
                 <a href="?page={{ professionals.previous_page_number }}&search={{ search_query }}" 
-                   class="px-3 py-1 border rounded hover:bg-gray-100">Précédent</a>
+                   class="btn btn-ghost">Précédent</a>
             {% endif %}
 
             {% for num in professionals.paginator.page_range %}
                 {% if professionals.number == num %}
-                    <span class="px-3 py-1 border rounded bg-blue-500 text-white">{{ num }}</span>
+                    <span class="btn btn-primary">{{ num }}</span>
                 {% else %}
                     <a href="?page={{ num }}&search={{ search_query }}" 
-                       class="px-3 py-1 border rounded hover:bg-gray-100">{{ num }}</a>
+                       class="btn btn-ghost">{{ num }}</a>
                 {% endif %}
             {% endfor %}
 
             {% if professionals.has_next %}
                 <a href="?page={{ professionals.next_page_number }}&search={{ search_query }}" 
-                   class="px-3 py-1 border rounded hover:bg-gray-100">Suivant</a>
+                   class="btn btn-ghost">Suivant</a>
             {% endif %}
         </div>
     </div>

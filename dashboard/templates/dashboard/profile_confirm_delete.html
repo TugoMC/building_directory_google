@@ -16,11 +16,11 @@
                     {% csrf_token %}
                     <div class="flex justify-end space-x-2">
                         <a href="{% url 'dashboard:profile_list' %}" 
-                           class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                           class="btn btn-secondary">
                             Annuler
                         </a>
                         <button type="submit" 
-                                class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">
+                                class="btn btn-error">
                             Confirmer la suppression
                         </button>
                     </div>

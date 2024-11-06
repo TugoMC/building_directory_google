@@ -7,17 +7,17 @@
         <h1 class="text-2xl font-bold">Détails du Professionnel</h1>
         <div class="flex gap-2">
             <a href="{% url 'dashboard:professional_edit' professional.pk %}" 
-               class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+               class="btn btn-warning text-white">
                 Modifier
             </a>
             <a href="{% url 'dashboard:professional_list' %}" 
-               class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+               class="btn btn-secondary text-white">
                 Retour à la liste
             </a>
         </div>
     </div>
 
-    <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
+    <div class="card bg-base-100 shadow-md rounded-lg overflow-hidden p-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-4">
                 {% if professional.profile_photo %}
@@ -70,7 +70,7 @@
                 {% if professional.presentation_video %}
                 <div>
                     <h2 class="text-xl font-bold mb-2">Vidéo de présentation</h2>
-                    <video controls class="w-full">
+                    <video controls class="w-full rounded-lg">
                         <source src="{{ professional.presentation_video.url }}" type="video/mp4">
                         Votre navigateur ne supporte pas la lecture de vidéos.
                     </video>

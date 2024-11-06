@@ -4,7 +4,7 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex justify-between items-center mb-6">
         <h1 id="portfolios" class="text-2xl font-semibold text-gray-900">Portfolios</h1>
-        <a href="{% url 'dashboard:portfolio_create' %}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+        <a href="{% url 'dashboard:portfolio_create' %}" class="btn btn-primary">
             Nouveau Portfolio
         </a>
     </div>
@@ -13,15 +13,18 @@
     <form method="GET" action="{% url 'dashboard:portfolio_list' %}" class="flex gap-4 mb-6">
         <!-- Champ de recherche -->
         <div>
-            <label for="search" class="block text-sm font-medium text-gray-700">Rechercher</label>
-            <input type="text" name="search" id="search" value="{{ search_query }}" placeholder="Recherche..."
-                   class="px-4 py-2 border rounded-md">
+            <label for="search" class="label">
+                <span class="label-text">Rechercher</span>
+            </label>
+            <input type="text" name="search" id="search" value="{{ search_query }}" placeholder="Recherche..." class="input input-bordered w-full max-w-xs">
         </div>
 
         <!-- Filtre par professionnel -->
         <div>
-            <label for="professionnel_id" class="block text-sm font-medium text-gray-700">Filtrer par Professionnel</label>
-            <select name="professionnel_id" id="professionnel_id" class="px-4 py-2 border rounded-md">
+            <label for="professionnel_id" class="label">
+                <span class="label-text">Filtrer par Professionnel</span>
+            </label>
+            <select name="professionnel_id" id="professionnel_id" class="select select-bordered w-full max-w-xs">
                 <option value="">Tous les professionnels</option>
                 {% for professionnel in professionnels %}
                     <option value="{{ professionnel.id }}" {% if professionnel.id|stringformat:"s" == selected_professionnel_id %}selected{% endif %}>
@@ -32,24 +35,24 @@
         </div>
 
         <!-- Bouton de filtrage -->
-        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 self-end">Filtrer</button>
+        <button type="submit" class="btn btn-primary self-end">Filtrer</button>
     </form>
 
     <!-- Liste des portfolios -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-20">
         {% for portfolio in portfolios %}
-            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="card shadow-lg">
                 {% if portfolio.images.first %}
-                    <img src="{{ portfolio.images.first.image.url }}" alt="{{ portfolio.title }}" class="w-full h-48 object-cover">
+                    <img src="{{ portfolio.images.first.image.url }}" alt="{{ portfolio.title }}" class="h-48 object-cover w-full rounded-t-lg">
                 {% endif %}
 
-                <div class="p-4">
-                    <h2 id="portfolio.title" class="text-xl font-semibold text-gray-900">{{ portfolio.title }}</h2>
+                <div class="card-body">
+                    <h2 id="portfolio.title" class="card-title">{{ portfolio.title }}</h2>
                     <p>{{ portfolio.professionnel.full_name }}</p>
-                    
-                    <div class="mt-4 flex justify-end space-x-2">
-                        <a href="{% url 'dashboard:portfolio_edit' portfolio.pk %}" class="text-blue-600 hover:text-blue-800">Modifier</a>
-                        <a href="{% url 'dashboard:portfolio_delete' portfolio.pk %}" class="text-red-600 hover:text-red-800">Supprimer</a>
+
+                    <div class="card-actions justify-end space-x-2">
+                        <a href="{% url 'dashboard:portfolio_edit' portfolio.pk %}" class="btn btn-link">Modifier</a>
+                        <a href="{% url 'dashboard:portfolio_delete' portfolio.pk %}" class="btn btn-link text-red-500">Supprimer</a>
                     </div>
                 </div>
             </div>
@@ -65,21 +68,21 @@
         <div class="mt-8 flex justify-center">
             {% if portfolios.has_previous %}
                 <a href="?page={{ portfolios.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
-                   class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">Précédent</a>
+                   class="btn btn-outline">Précédent</a>
             {% endif %}
             
             {% for i in portfolios.paginator.page_range %}
                 {% if portfolios.number == i %}
-                    <span class="px-3 py-2 border border-gray-300 bg-blue-50 text-blue-600 text-sm font-medium">{{ i }}</span>
+                    <span class="btn btn-outline btn-active">{{ i }}</span>
                 {% else %}
                     <a href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}"
-                       class="px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">{{ i }}</a>
+                       class="btn btn-outline">{{ i }}</a>
                 {% endif %}
             {% endfor %}
             
             {% if portfolios.has_next %}
                 <a href="?page={{ portfolios.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
-                   class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">Suivant</a>
+                   class="btn btn-outline">Suivant</a>
             {% endif %}
         </div>
     {% endif %}

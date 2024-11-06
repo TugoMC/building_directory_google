@@ -7,47 +7,37 @@
     <form method="get" class="mb-6">
         <div class="flex gap-2">
             <input type="text" name="search" value="{{ search_query }}" 
-                   class="form-input rounded-md flex-1" 
+                   class="input input-bordered w-full" 
                    placeholder="Rechercher un utilisateur...">
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">
+            <button type="submit" class="btn btn-primary">
                 Rechercher
             </button>
         </div>
     </form>
 
     <!-- Liste des profils -->
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-        <table class="min-w-full">
-            <thead class="bg-gray-50">
+    <div class="overflow-x-auto">
+        <table class="table table-zebra w-full">
+            <thead>
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Utilisateur
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Email
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                    </th>
+                    <th>Utilisateur</th>
+                    <th>Email</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody>
                 {% for profile in profiles %}
                 <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        {{ profile.get_full_name|default:profile.username }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        {{ profile.email }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td>{{ profile.get_full_name|default:profile.username }}</td>
+                    <td>{{ profile.email }}</td>
+                    <td>
                         <div class="flex gap-2">
                             <a href="{% url 'dashboard:profile_detail' profile.pk %}" 
-                               class="text-blue-600 hover:text-blue-900">Voir</a>
+                               class="btn btn-link">Voir</a>
                             <a href="{% url 'dashboard:profile_edit' profile.pk %}" 
-                               class="text-green-600 hover:text-green-900">Modifier</a>
+                               class="btn btn-link">Modifier</a>
                             <a href="{% url 'dashboard:profile_delete' profile.pk %}" 
-                               class="text-red-600 hover:text-red-900">Supprimer</a>
+                               class="btn btn-link">Supprimer</a>
                         </div>
                     </td>
                 </tr>
@@ -58,20 +48,20 @@
 
     <!-- Pagination -->
     {% if profiles.has_other_pages %}
-    <div class="flex justify-center space-x-1 mt-6">
+    <div class="btn-group justify-center mt-6">
         {% if profiles.has_previous %}
         <a href="?page={{ profiles.previous_page_number }}&search={{ search_query }}" 
-           class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-blue-500 hover:text-white">
+           class="btn btn-secondary">
             Précédent
         </a>
         {% endif %}
 
         {% for num in profiles.paginator.page_range %}
             {% if profiles.number == num %}
-            <span class="px-4 py-2 text-white bg-blue-500 rounded-md">{{ num }}</span>
+            <span class="btn btn-primary">{{ num }}</span>
             {% else %}
             <a href="?page={{ num }}&search={{ search_query }}" 
-               class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-blue-500 hover:text-white">
+               class="btn btn-secondary">
                 {{ num }}
             </a>
             {% endif %}
@@ -79,7 +69,7 @@
 
         {% if profiles.has_next %}
         <a href="?page={{ profiles.next_page_number }}&search={{ search_query }}" 
-           class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-blue-500 hover:text-white">
+           class="btn btn-secondary">
             Suivant
         </a>
         {% endif %}
