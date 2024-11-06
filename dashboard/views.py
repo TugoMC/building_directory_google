@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.urls import reverse
+from django.db import transaction
 from django.views.decorators.http import require_POST
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -24,7 +25,7 @@ from .forms import (
 )
 
 
-@staff_member_required
+@staff_member_required  # Sécurité : Accessible uniquement aux membres du staff
 def dashboard_home(request):
     context = {
         'professionals_count': Professionnel.objects.count(),
@@ -302,70 +303,93 @@ def reservation_status_update(request, pk):
 
 
 # Vues pour les Portfolios
+# views.py
 @staff_member_required
 def portfolio_list(request):
     search_query = request.GET.get('search', '')
-    portfolios = portfolios.objects.all()
-    
+    professionnel_id = request.GET.get('professionnel_id', None)
+
+    # Filtre de base
+    portfolios = Portfolio.objects.select_related('professionnel').all()
+
+    # Filtrer par mot-clé
     if search_query:
         portfolios = portfolios.filter(
             Q(title__icontains=search_query) |
             Q(professionnel__full_name__icontains=search_query)
         )
-    
+
+    # Filtrer par professionnel si sélectionné
+    if professionnel_id:
+        portfolios = portfolios.filter(professionnel_id=professionnel_id)
+
     portfolios = portfolios.order_by('-created_at')
-    paginator = Paginator(portfolios, 9)  # 9 pour une grille 3x3
+    paginator = Paginator(portfolios, 9)
     page = request.GET.get('page')
     portfolios = paginator.get_page(page)
     
+    # Récupération de tous les professionnels pour le filtre
+    professionnels = Professionnel.objects.all()
+    
     return render(request, 'dashboard/portfolio_list.html', {
         'portfolios': portfolios,
-        'search_query': search_query
+        'search_query': search_query,
+        'professionnels': professionnels,  # Liste des professionnels
+        'selected_professionnel_id': professionnel_id,  # ID du professionnel sélectionné
     })
+
 
 @staff_member_required
 def portfolio_create(request):
     if request.method == 'POST':
         form = PortfolioForm(request.POST)
-        image_form = PortfolioImageForm(request.POST, request.FILES)
-        
-        if form.is_valid() and image_form.is_valid():
+        if form.is_valid():
             portfolio = form.save()
-            if 'image' in request.FILES:
+            # Gestion des images
+            for img in request.FILES.getlist('images'):
                 PortfolioImage.objects.create(
                     portfolio=portfolio,
-                    image=request.FILES['image'],
-                    order=image_form.cleaned_data['order']
+                    image=img,
+                    order=PortfolioImage.objects.filter(portfolio=portfolio).count()
                 )
             messages.success(request, 'Portfolio créé avec succès.')
-            return redirect('dashboard:portfolio_list')
+            return JsonResponse({'success': True})
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
         form = PortfolioForm()
-        image_form = PortfolioImageForm()
     
     return render(request, 'dashboard/portfolio_form.html', {
         'form': form,
-        'image_form': image_form
+        'is_creation': True
     })
 
 @staff_member_required
 def portfolio_edit(request, pk):
-    portfolio = get_object_or_404(Portfolio, pk=pk)
+    portfolio = get_object_or_404(Portfolio.objects.select_related('professionnel'), pk=pk)
     if request.method == 'POST':
         form = PortfolioForm(request.POST, instance=portfolio)
         if form.is_valid():
-            form.save()
+            portfolio = form.save()
+            # Gestion des nouvelles images
+            for img in request.FILES.getlist('images'):
+                PortfolioImage.objects.create(
+                    portfolio=portfolio,
+                    image=img,
+                    order=portfolio.images.count()
+                )
             messages.success(request, 'Portfolio mis à jour avec succès.')
-            return redirect('dashboard:portfolio_list')
+            return JsonResponse({'success': True})
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
         form = PortfolioForm(instance=portfolio)
     
     return render(request, 'dashboard/portfolio_form.html', {
         'form': form,
         'portfolio': portfolio,
-        'images': portfolio.images.all()
+        'images': portfolio.images.all().order_by('order'),
+        'is_creation': False
     })
-
+    
 @staff_member_required
 def portfolio_delete(request, pk):
     portfolio = get_object_or_404(Portfolio, pk=pk)
@@ -377,6 +401,7 @@ def portfolio_delete(request, pk):
         'portfolio': portfolio
     })
 
+# Amélioration des vues de gestion des images
 @staff_member_required
 @require_POST
 def portfolio_image_add(request, portfolio_id):
@@ -386,28 +411,43 @@ def portfolio_image_add(request, portfolio_id):
     if form.is_valid():
         image = form.save(commit=False)
         image.portfolio = portfolio
+        image.order = portfolio.images.count()  # Place la nouvelle image à la fin
         image.save()
-        return JsonResponse({'success': True})
+        return JsonResponse({
+            'success': True, 
+            'message': 'Image ajoutée avec succès'
+        })
     
-    return JsonResponse({'success': False, 'errors': form.errors})
-
-@staff_member_required
-@require_POST
-def portfolio_image_delete(request, image_id):
-    image = get_object_or_404(PortfolioImage, pk=image_id)
-    portfolio_id = image.portfolio.id
-    image.delete()
-    return JsonResponse({'success': True})
+    return JsonResponse({
+        'success': False, 
+        'errors': form.errors
+    }, status=400)
 
 @staff_member_required
 @require_POST
 def portfolio_image_reorder(request, portfolio_id):
-    portfolio = get_object_or_404(Portfolio, pk=portfolio_id)
-    order_data = request.POST.get('order', '').split(',')
-    
-    for index, image_id in enumerate(order_data):
-        image = PortfolioImage.objects.get(pk=int(image_id))
-        image.order = index
-        image.save()
-    
-    return JsonResponse({'success': True})
+    try:
+        portfolio = get_object_or_404(Portfolio, pk=portfolio_id)
+        order_data = json.loads(request.body)
+        
+        with transaction.atomic():
+            for index, image_id in enumerate(order_data['image_order']):
+                PortfolioImage.objects.filter(
+                    portfolio=portfolio,
+                    id=image_id
+                ).update(order=index)
+        
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)
+      
+@staff_member_required
+@require_POST
+def portfolio_image_delete(request, image_id):
+    image = get_object_or_404(PortfolioImage, id=image_id)
+    image.delete()
+    return JsonResponse({'success': True})  # Toujours renvoyer un JSON pour que le front puisse traiter la réponse
+  

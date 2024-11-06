@@ -1,0 +1,175 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+
+{% load static %}
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-semibold text-gray-900 mb-6">
+            {% if is_creation %}Nouveau Portfolio{% else %}Modifier Portfolio{% endif %}
+        </h1>
+
+        <form method="POST" enctype="multipart/form-data" id="portfolio-form">
+            {% csrf_token %}
+
+            <div class="space-y-4">
+                {% for field in form %}
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ field.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-8">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Images</h2>
+
+                <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-blue-500 transition-colors">
+                    <input type="file" id="image-input" name="images" multiple accept="image/*" class="hidden">
+                    <div class="text-center">
+                        <span class="text-blue-600 hover:text-blue-500">Cliquez pour uploader</span>
+                        <span class="text-gray-500"> ou glissez vos images ici</span>
+                    </div>
+                </div>
+
+                <div id="preview-container" class="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {% if not is_creation %}
+                        {% for image in images %}
+                        <div class="relative group" data-image-id="{{ image.id }}">
+                            <img src="{{ image.image.url }}" class="w-full h-32 object-cover rounded-lg">
+                            <button type="button" class="delete-image absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity" data-image-id="{{ image.id }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4 mt-8">
+                <a href="{% url 'dashboard:portfolio_list' %}" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Annuler
+                </a>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    {% if is_creation %}Créer{% else %}Enregistrer{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('drop-zone');
+    const imageInput = document.getElementById('image-input');
+    const previewContainer = document.getElementById('preview-container');
+    const form = document.getElementById('portfolio-form');
+
+    // Gestion du drag & drop
+    dropZone.addEventListener('click', () => imageInput.click());
+    
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-blue-500');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-blue-500');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-blue-500');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    imageInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+    });
+
+    function handleFiles(files) {
+        Array.from(files).forEach(file => {
+            if (!file.type.startsWith('image/')) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'relative group';
+                previewDiv.innerHTML = `
+                    <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg">
+                    <button type="button" class="delete-preview absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                `;
+                previewContainer.appendChild(previewDiv);
+
+                // Ajouter le fichier à un FormData pour la soumission
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                const newInput = document.createElement('input');
+                newInput.type = 'file';
+                newInput.name = 'images';
+                newInput.className = 'hidden';
+                newInput.files = dataTransfer.files;
+                previewDiv.appendChild(newInput);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Suppression des images
+    previewContainer.addEventListener('click', (e) => {
+        if (e.target.closest('.delete-image')) {
+            const imageId = e.target.closest('.delete-image').dataset.imageId;
+            fetch(`/dashboard/portfolio/image/${imageId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    e.target.closest('[data-image-id]').remove();
+                }
+            });
+        } else if (e.target.closest('.delete-preview')) {
+            e.target.closest('.relative').remove();
+        }
+    });
+
+    // Soumission du formulaire
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        
+        // Ajouter toutes les images au FormData
+        document.querySelectorAll('input[type="file"][name="images"]').forEach(input => {
+            if (input.files.length > 0) {
+                formData.append('images', input.files[0]);
+            }
+        });
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = "{% url 'dashboard:portfolio_list' %}";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

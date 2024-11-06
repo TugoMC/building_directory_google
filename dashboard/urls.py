@@ -34,4 +34,5 @@ urlpatterns = [
     path('portfolios/create/', views.portfolio_create, name='portfolio_create'),
     path('portfolios/<int:pk>/edit/', views.portfolio_edit, name='portfolio_edit'),
     path('portfolios/<int:pk>/delete/', views.portfolio_delete, name='portfolio_delete'),
+    path('dashboard/portfolio/image/<int:image_id>/delete/', views.portfolio_image_delete, name='portfolio_image_delete'),
 ]
